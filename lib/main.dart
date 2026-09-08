@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pantalla_login.dart';
+import 'vistas/pantalla_login.dart'; // ruta actualizada a la carpeta vistas
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: PantallaLogin(), //Pantalla Inicial
+      home: PantallaLogin(), // Pantalla Inicial
     );
   }
 }
