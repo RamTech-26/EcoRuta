@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'dart:async';
+
 class PantallaReporteIncidente extends StatefulWidget {
   // necesita estado para la selección
   const PantallaReporteIncidente({super.key});
@@ -158,15 +160,123 @@ class _PantallaReporteIncidenteState extends State<PantallaReporteIncidente> {
               ),
             ),
             SizedBox(height: 16), // espacio antes del botón
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // vuelve a PantallaPrincipal
-              },
-              child: const Text('Volver'), // texto del botón
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // vuelve atrás
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFC62828), // rojo ladrillo
+                      foregroundColor: Colors.white
+                    ),
+                    child: const Text('Volver'),
+                  ),
+                ),
+                const SizedBox(width: 12), // espacio entre botones
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      showDialog(
+                        // abre diálogo
+                        context: context,
+                        barrierDismissible:
+                            false, // no se cierra tocando afuera
+                        builder: (context) => const _DialogoConfirmacion(),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E7D32),
+                      foregroundColor: Colors.white // verde bosque
+                    ),
+                    child: const Text('Confirmar'),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DialogoConfirmacion extends StatefulWidget {
+  const _DialogoConfirmacion();
+
+  @override
+  State<_DialogoConfirmacion> createState() => _DialogoConfirmacionState();
+}
+
+class _DialogoConfirmacionState extends State<_DialogoConfirmacion> {
+  int _cuentaInicial = 3; // cuenta 3, 2, 1
+  bool _puedeConfirmar = false; // controla si OK está visible
+  int _segundosRestantes = 15; // cuenta regresiva final
+  Timer? _timerInicial; // controla 3.. 2.. 1..
+  Timer? _timerCuentaRegresiva; // controla los 15s
+
+  @override
+  void initState() {
+    super.initState();
+    _timerInicial = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      setState(() {
+        _cuentaInicial--;
+        if (_cuentaInicial <= 0) {
+          t.cancel();
+          _puedeConfirmar = true; // muestra OK
+          _iniciarCuentaRegresiva(); // arranca los 15s
+        }
+      });
+    });
+  }
+
+  void _iniciarCuentaRegresiva() {
+    _timerCuentaRegresiva = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      setState(() {
+        _segundosRestantes--;
+        if (_segundosRestantes <= 0) {
+          t.cancel();
+          Navigator.pop(context); // cierra solo
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timerInicial?.cancel(); // libera el timer
+    _timerCuentaRegresiva?.cancel(); // libera el timer
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Confirmar envío'),
+      content: Text(
+        _puedeConfirmar
+            ? '¿Desea enviar?\nSe cancelará en $_segundosRestantes s' // fase 2
+            : 'Esperá... $_cuentaInicial', // fase 1
+      ),
+      actionsAlignment: MainAxisAlignment.spaceBetween, // Cancelar izq, OK der
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context), // cierra diálogo
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: _puedeConfirmar
+              ? () {
+                  Navigator.pop(context); // cierra diálogo
+                  Navigator.pop(context); // cierra pantalla
+                }
+              : null, // deshabilitado durante 3.. 2.. 1..
+          child: const Text('OK'),
+        ),
+      ],
     );
   }
 }

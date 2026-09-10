@@ -2,8 +2,31 @@ import 'package:flutter/material.dart';
 
 import 'pantalla_reporte_incidente.dart';
 
-class PantallaPrincipal extends StatelessWidget {
+class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
+
+  @override
+  State<PantallaPrincipal> createState() => _PantallaPrincipalState();
+}
+
+class _PantallaPrincipalState extends State<PantallaPrincipal> {
+  final DraggableScrollableController _controladorPanel =
+      DraggableScrollableController(); // controla el panel
+
+  @override
+  void dispose() {
+    _controladorPanel.dispose(); // libera recursos
+    super.dispose();
+  }
+
+  void _alternarPanel() {
+    final abierto = _controladorPanel.size > 0.2; // ¿está abierto?
+    _controladorPanel.animateTo(
+      abierto ? 0.1 : 0.35, // si está abierto, baja; si no, sube
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +60,7 @@ class PantallaPrincipal extends StatelessWidget {
               ],
             ),
             DraggableScrollableSheet(
+              controller: _controladorPanel,
               initialChildSize: 0.1,
               minChildSize: 0.1,
               maxChildSize: 0.35,
@@ -53,15 +77,26 @@ class PantallaPrincipal extends StatelessWidget {
                   child: ListView(
                     controller: scrollController,
                     children: [
-                      Container(
-                        height: 30,
-                        alignment: Alignment.topCenter,
+                      GestureDetector(
+                        // detecta el toque
+                        onTap: _alternarPanel, // al tocar, sube o baja
                         child: Container(
-                          width: 100,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 150, 7, 7),
-                            borderRadius: BorderRadius.circular(20),
+                          // área táctil
+                          height: 30,
+                          alignment: Alignment.topCenter,
+                          color:
+                              Colors.transparent, // invisible pero clickeable
+                          child: Container(
+                            // barrita visual
+                            width: 60,
+                            height: 6,
+                            margin: const EdgeInsets.only(
+                              top: 10,
+                            ), // separación desde arriba
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 150, 7, 7),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
                         ),
                       ),
