@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'pantalla_reporte_incidente.dart';
+import '../viewmodels/principal_viewmodel.dart';
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
@@ -10,22 +11,18 @@ class PantallaPrincipal extends StatefulWidget {
 }
 
 class _PantallaPrincipalState extends State<PantallaPrincipal> {
-  final DraggableScrollableController _controladorPanel =
-      DraggableScrollableController(); // controla el panel
+  late final PrincipalViewModel viewModel; // se guarda el ViewModel
+
+  @override
+  void initState() {
+    super.initState(); // siempre primero
+    viewModel = PrincipalViewModel(); // se crea una sola vez
+  }
 
   @override
   void dispose() {
-    _controladorPanel.dispose(); // libera recursos
-    super.dispose();
-  }
-
-  void _alternarPanel() {
-    final abierto = _controladorPanel.size > 0.2; // ¿está abierto?
-    _controladorPanel.animateTo(
-      abierto ? 0.1 : 0.35, // si está abierto, baja; si no, sube
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeInOut,
-    );
+    viewModel.dispose(); // libera recursos
+    super.dispose(); // siempre al final
   }
 
   @override
@@ -38,38 +35,43 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 TextField(
-                  decoration: InputDecoration(
+                  controller:
+                      viewModel.controladorBusqueda, // conecta con el ViewModel
+                  decoration: const InputDecoration(
                     hintText: 'Buscar Destino',
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextField(
-                  decoration: InputDecoration(
+                  controller:
+                      viewModel.controladorDestino, // conecta con el ViewModel
+                  decoration: const InputDecoration(
                     hintText: 'Destino',
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Expanded(
                   child: Container(
                     color: Colors.grey,
-                    child: Center(child: Text('Mapa')),
+                    child: const Center(child: Text('Mapa')),
                   ),
                 ),
               ],
             ),
             DraggableScrollableSheet(
-              controller: _controladorPanel,
+              controller:
+                  viewModel.controladorPanel, // conecta con el ViewModel
               initialChildSize: 0.1,
               minChildSize: 0.1,
               maxChildSize: 0.35,
               snap: true,
-              snapSizes: [0.1, 0.35],
+              snapSizes: const [0.1, 0.35],
               builder: (context, scrollController) {
                 return Container(
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 161, 252, 255),
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 161, 252, 255),
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(20),
                     ),
@@ -78,21 +80,15 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                     controller: scrollController,
                     children: [
                       GestureDetector(
-                        // detecta el toque
-                        onTap: _alternarPanel, // al tocar, sube o baja
+                        onTap: viewModel.alternarPanel, // al tocar, sube o baja
                         child: Container(
-                          // área táctil
                           height: 30,
                           alignment: Alignment.topCenter,
-                          color:
-                              Colors.transparent, // invisible pero clickeable
+                          color: Colors.transparent,
                           child: Container(
-                            // barrita visual
                             width: 60,
                             height: 6,
-                            margin: const EdgeInsets.only(
-                              top: 10,
-                            ), // separación desde arriba
+                            margin: const EdgeInsets.only(top: 10),
                             decoration: BoxDecoration(
                               color: const Color.fromARGB(255, 150, 7, 7),
                               borderRadius: BorderRadius.circular(20),
@@ -100,12 +96,12 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                           ),
                         ),
                       ),
-                      Padding(
+                      const Padding(
                         padding: EdgeInsets.all(8),
                         child: Text(
                           'Opciones',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
@@ -115,10 +111,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                         crossAxisCount: 2,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.all(12), // antes 16
-                        mainAxisSpacing: 12, // antes 16
-                        crossAxisSpacing: 12, // antes 16
-                        childAspectRatio: 2.2, // baldosas más anchas que altas
+                        padding: const EdgeInsets.all(12),
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 2.2,
                         children: [
                           _Baldosa(
                             icono: Icons.map,
@@ -177,7 +173,7 @@ class _Baldosa extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        onTap: onTap, // ← usa la acción recibida
+        onTap: onTap,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
