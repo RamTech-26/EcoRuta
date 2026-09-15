@@ -1,36 +1,31 @@
-import 'package:flutter/material.dart'; // necesita ChangeNotifier y TextEditingController
+import 'package:flutter/foundation.dart'; // solo necesita ChangeNotifier
 
-class LoginViewModel extends ChangeNotifier {  // hereda la capacidad de avisar cambios
-  final TextEditingController controladorUsuario = TextEditingController();      // campo usuario
-  final TextEditingController controladorContrasena = TextEditingController();   // campo contraseña
+class LoginViewModel extends ChangeNotifier {
+  bool _logueado = false;                  // estado privado
+  bool get logueado => _logueado;          // getter para leer
 
-  bool _logueado = false;                 // estado: ¿el usuario ya inició sesión?
-  bool get logueado => _logueado;         // getter para que la Vista lo lea
-
-  void login() {                          // acción del botón Confirmar
-    _logueado = true;                     // marca como logueado
-    notifyListeners();                    // avisa a la Vista que cambió
+  void login(String usuario, String contrasena) {  // recibe credenciales
+    if (usuario.isEmpty || contrasena.isEmpty) return; // validación mínima
+    _logueado = true;                      // cambia el estado
+    notifyListeners();                     // avisa a la vista
   }
 
-  void loginConGoogle() {                 // acción del botón Google
-    _logueado = true;                     // marca como logueado
-    notifyListeners();                    // avisa a la Vista que cambió
-  }
-
-  @override
-  void dispose() {                        // libera recursos
-    controladorUsuario.dispose();         // libera el controller de usuario
-    controladorContrasena.dispose();      // libera el controller de contraseña
-    super.dispose();                      // siempre al final
+  void loginConGoogle() {                  // sin parámetros
+    _logueado = true;
+    notifyListeners();
   }
 }
 
-/* Cambios clave:
+/* Cambios clave (PantallaLogin — versión B):
 
-ViewModel con controladorBusqueda, controladorDestino, controladorPanel y alternarPanel().
+ViewModel LoginViewModel con estado privado _logueado, getter público logueado, y métodos login(String usuario, String contrasena) y loginConGoogle() que terminan en notifyListeners().
 
-La Vista ya no tiene DraggableScrollableController ni lógica de panel.
+La Vista maneja los TextEditingController (usuario y contraseña) y los libera en su dispose().
 
-La Vista solo lee el ViewModel y llama a sus métodos.
+La Vista ya no navega directamente desde el botón Confirmar; solo llama a viewModel.login(usuario, contrasena).
 
-La navegación a PantallaReporteIncidente sigue en la Vista (es decisión de UI, no de lógica). */
+La navegación a PantallaPrincipal ocurre cuando logueado cambia a true dentro del ListenableBuilder, usando pushReplacement.
+
+El ViewModel no importa material.dart, solo foundation.dart, porque no depende de ningún widget.
+
+ */

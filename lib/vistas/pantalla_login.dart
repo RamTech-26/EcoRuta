@@ -11,28 +11,34 @@ class PantallaLogin extends StatefulWidget {
 }
 
 class _PantallaLoginState extends State<PantallaLogin> {
-  late final LoginViewModel viewModel; // se guarda el ViewModel
+  late final LoginViewModel viewModel;                          // ViewModel
+  final TextEditingController controladorUsuario =
+      TextEditingController();                                  // campo usuario
+  final TextEditingController controladorContrasena =
+      TextEditingController();                                  // campo contraseña
 
   @override
   void initState() {
-    super.initState(); // siempre primero
-    viewModel = LoginViewModel(); // se crea una sola vez
+    super.initState();
+    viewModel = LoginViewModel();                               // se crea el ViewModel
   }
 
   @override
   void dispose() {
-    viewModel.dispose(); // libera recursos
-    super.dispose(); // siempre al final
+    controladorUsuario.dispose();                               // libera controller
+    controladorContrasena.dispose();                            // libera controller
+    viewModel.dispose();                                        // libera ViewModel
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: viewModel, // escucha los avisos del ViewModel
+      listenable: viewModel,                                    // escucha al ViewModel
       builder: (context, child) {
-        if (viewModel.logueado) { // si cambió el estado
+        if (viewModel.logueado) {                               // si cambió el estado
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacement( // navega una sola vez
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (_) => const PantallaPrincipal(),
@@ -40,7 +46,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
             );
           });
         }
-        return Scaffold( // dibuja la pantalla
+        return Scaffold(
           body: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -49,33 +55,34 @@ class _PantallaLoginState extends State<PantallaLogin> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Spacer(),
-                  const Text('Login'), // título
-                  const SizedBox(height: 20), // espacio vertical
+                  const Text('Login'),
+                  const SizedBox(height: 20),
                   TextField(
-                    // campo de texto para usuario
-                    controller: viewModel.controladorUsuario,
+                    controller: controladorUsuario,             // controller local
                     decoration: const InputDecoration(
-                      labelText: 'Usuario', // etiqueta visible
-                      border: OutlineInputBorder(), // borde alrededor
+                      labelText: 'Usuario',
+                      border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 20),
                   TextField(
-                    // campo de texto para contraseña
-                    controller: viewModel.controladorContrasena,
+                    controller: controladorContrasena,          // controller local
                     decoration: const InputDecoration(
-                      labelText: 'Contraseña', // etiqueta visible
-                      border: OutlineInputBorder(), // borde alrededor
+                      labelText: 'Contraseña',
+                      border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 20), // espacio entre contraseña y botón
+                  const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: viewModel.loginConGoogle, // llama al ViewModel
+                    onPressed: viewModel.loginConGoogle,        // sin parámetros
                     child: const Text('Ingresar Con Google...'),
                   ),
                   const Spacer(),
                   ElevatedButton(
-                    onPressed: viewModel.login, // llama al ViewModel
+                    onPressed: () => viewModel.login(           // pasa las credenciales
+                      controladorUsuario.text,
+                      controladorContrasena.text,
+                    ),
                     child: const Text('Confirmar'),
                   ),
                 ],
@@ -83,7 +90,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
             ),
           ),
         );
-      }, 
-    ); 
+      },
+    );
   }
 }
