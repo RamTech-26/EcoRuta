@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart'; // necesita ChangeNotifier y TextEditingController
+
+import 'package:flutter/widgets.dart';
 
 class ReporteIncidenteViewModel extends ChangeNotifier {
-  final List<String> _incidentesSeleccionados = []; // guarda los tipos marcados
-  List<String> get incidentesSeleccionados => _incidentesSeleccionados; // getter público
+  final List<String> _incidentesSeleccionados = [];
+  List<String> get incidentesSeleccionados => List.unmodifiable(_incidentesSeleccionados);
 
-  final TextEditingController controladorDescripcion =
-      TextEditingController(); // guarda el texto de "Otros"
+  final TextEditingController controladorDescripcion = TextEditingController();
 
-  final List<String> tiposDisponibles = const [ // tipos de incidente
+  final List<String> tiposDisponibles = const [
     'Choque',
     'Semáforo roto',
     'Accidente',
@@ -16,38 +16,32 @@ class ReporteIncidenteViewModel extends ChangeNotifier {
     'Otros',
   ];
 
-  bool estaSeleccionado(String tipo) {           // ¿el tipo está marcado?
+  bool estaSeleccionado(String tipo) {
     return _incidentesSeleccionados.contains(tipo);
   }
 
-  void alternarIncidente(String tipo, bool seleccionado) { // marca o desmarca
+  void alternarIncidente(String tipo, bool seleccionado) {
     if (seleccionado) {
-      _incidentesSeleccionados.add(tipo);        // agrega el tipo
+      if (!_incidentesSeleccionados.contains(tipo)) {
+        _incidentesSeleccionados.add(tipo); // evita duplicados
+      }
     } else {
-      _incidentesSeleccionados.remove(tipo);     // quita el tipo
+      _incidentesSeleccionados.remove(tipo);
     }
-    notifyListeners();                           // avisa a la Vista
+    notifyListeners(); // siempre después de modificar
   }
 
-  bool get mostrarCampoOtros =>                  // ¿hay que mostrar el campo "Otros"?
-      _incidentesSeleccionados.contains('Otros');
+  bool get mostrarCampoOtros => _incidentesSeleccionados.contains('Otros');
+
+  void limpiar() {
+    _incidentesSeleccionados.clear();
+    controladorDescripcion.clear();
+    notifyListeners();
+  }
 
   @override
-  void dispose() {                               // libera recursos
-    controladorDescripcion.dispose();            // libera el controller
-    super.dispose();                             // siempre al final
+  void dispose() {
+    controladorDescripcion.dispose();
+    super.dispose();
   }
 }
-
-/* Cambios clave (ReporteIncidente)
-ViewModel con lista de incidentesSeleccionados, controladorDescripcion, tiposDisponibles y métodos estaSeleccionado() / alternarIncidente().
-
-La Vista ya no maneja la lista de seleccionados ni la lógica de los checkboxes.
-
-La Vista solo lee el ViewModel (con ListenableBuilder) y llama a sus métodos.
-
-Los checkboxes se generan automáticamente recorriendo tiposDisponibles con .map(), en lugar de estar escritos uno por uno.
-
-El diálogo temporizado sigue como widget privado en la Vista porque son timers de UI puramente visuales, no lógica de negocio compartida.
-
- */

@@ -1,31 +1,47 @@
-import 'package:flutter/foundation.dart'; // solo necesita ChangeNotifier
+import 'package:flutter/foundation.dart';
+
+import '../servicios/usuario_servicio.dart';
 
 class LoginViewModel extends ChangeNotifier {
-  bool _logueado = false;                  // estado privado
-  bool get logueado => _logueado;          // getter para leer
+  final UsuarioServicio _servicio = UsuarioServicio();
 
-  void login(String usuario, String contrasena) {  // recibe credenciales
-    if (usuario.isEmpty || contrasena.isEmpty) return; // validación mínima
-    _logueado = true;                      // cambia el estado
-    notifyListeners();                     // avisa a la vista
-  }
+  bool _logueado = false;
+  bool _cargando = false;
+  String? _error;
 
-  void loginConGoogle() {                  // sin parámetros
-    _logueado = true;
+  bool get logueado => _logueado;
+  bool get cargando => _cargando;
+  String? get error => _error;
+
+  bool _ocultarContrasena = true;
+  bool get ocultarContrasena => _ocultarContrasena;
+
+  void alternarVisibilidadContrasena() {
+    _ocultarContrasena = !_ocultarContrasena;
     notifyListeners();
   }
+
+  Future<void> login(String nombre, String pass) async {
+    if (nombre.trim().isEmpty || pass.trim().isEmpty) {
+      _error = 'Completá usuario y contraseña';
+      notifyListeners();
+      return;
+    }
+    _cargando = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final usuario = await _servicio.obtenerPorUsuario(nombre.trim());
+      if (usuario == null || usuario.contrasena != pass.trim()) {
+        _error = 'Usuario o contraseña incorrectos'; 
+      } else {
+        _logueado = true;
+      }
+    } catch (_) {
+      _error = 'Error al iniciar sesión';
+    } finally {
+      _cargando = false;
+      notifyListeners();
+    }
+  }
 }
-
-/* Cambios clave (PantallaLogin — versión B):
-
-ViewModel LoginViewModel con estado privado _logueado, getter público logueado, y métodos login(String usuario, String contrasena) y loginConGoogle() que terminan en notifyListeners().
-
-La Vista maneja los TextEditingController (usuario y contraseña) y los libera en su dispose().
-
-La Vista ya no navega directamente desde el botón Confirmar; solo llama a viewModel.login(usuario, contrasena).
-
-La navegación a PantallaPrincipal ocurre cuando logueado cambia a true dentro del ListenableBuilder, usando pushReplacement.
-
-El ViewModel no importa material.dart, solo foundation.dart, porque no depende de ningún widget.
-
- */
