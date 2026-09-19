@@ -51,7 +51,23 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
   }
 
   /// Muestra un diálogo para confirmar el registro.
+  /// Valida los campos y, si todo está bien, muestra el diálogo de confirmación.
   Future<void> _confirmarRegistro() async {
+    // 1) Primero validamos. Si hay errores, se muestran y no seguimos.
+    final valido = viewModel.validarCampos(
+      nombreApellido: controladorNombreApellido.text,
+      usuario: controladorUsuario.text,
+      dni: controladorDni.text,
+      email: controladorEmail.text,
+      contrasena: controladorContrasena.text,
+      repetirContrasena: controladorRepetirContrasena.text,
+      pais: controladorPais.text,
+      ciudad: controladorCiudad.text,
+      departamento: controladorDepartamento.text,
+    );
+    if (!valido) return;
+
+    // 2) Si todo está bien, recién ahí mostramos el diálogo.
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -72,6 +88,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
 
     if (confirmado != true) return;
 
+    // 3) Si confirma, guardamos en la base de datos.
     await viewModel.registrar(
       nombreApellido: controladorNombreApellido.text,
       usuario: controladorUsuario.text,
