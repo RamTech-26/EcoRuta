@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../viewmodels/login_viewmodel.dart';
 import 'pantalla_principal.dart';
+import 'pantalla_registro.dart';
 
 class PantallaLogin extends StatefulWidget {
   const PantallaLogin({super.key});
@@ -121,6 +122,20 @@ class _PantallaLoginState extends State<PantallaLogin> {
                     icon: const Icon(Icons.g_mobiledata),
                     label: const Text('Continuar con Google'),
                   ),
+                ),
+                const SizedBox(height: 24),
+                TextButton(
+                  onPressed: viewModel.cargando
+                      ? null
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PantallaRegistro(),
+                            ),
+                          );
+                        },
+                  child: const Text('¿No tenés cuenta? Registrate'),
                 ),
               ],
             ),
