@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../viewmodels/principal_viewmodel.dart';
+import 'pantalla_lista_lugares_frecuentes.dart';
+import 'pantalla_reporte_incidente.dart';
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
@@ -22,61 +25,141 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     super.dispose();
   }
 
+  Widget _baldosa(IconData icono, String titulo, VoidCallback onTap) {
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icono, size: 36, color: Colors.green),
+              const SizedBox(height: 8),
+              Text(titulo, style: const TextStyle(fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('EcoRuta')),
-      body: Stack(
+      body: Column(
         children: [
-          const Center(child: Text('Mapa aqui')),
-          DraggableScrollableSheet(
-            controller: viewModel.controladorPanel,
-            initialChildSize: 0.3,
-            minChildSize: 0.2,
-            maxChildSize: 0.8,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                TextField(
+                  controller: viewModel.controladorBusqueda,
+                  decoration: const InputDecoration(
+                    labelText: 'Origen',
+                    prefixIcon: Icon(Icons.my_location),
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    GestureDetector(
-                      onTap: viewModel.alternarPanel,
-                      child: Center(
-                        child: Container(
-                          width: 40,
-                          height: 5,
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: viewModel.controladorDestino,
+                  decoration: const InputDecoration(
+                    labelText: 'Destino',
+                    prefixIcon: Icon(Icons.location_on),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                Container(
+                  color: Colors.grey[200],
+                  child: const Center(child: Text('Mapa')),
+                ),
+                DraggableScrollableSheet(
+                  controller: viewModel.controladorPanel,
+                  initialChildSize: 0.1,
+                  minChildSize: 0.1,
+                  maxChildSize: 0.4,
+                  snap: true,
+                  snapSizes: const [0.1, 0.4],
+                  builder: (context, scrollController) {
+                    return Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(20),
                         ),
                       ),
-                    ),
-                    TextField(
-                      controller: viewModel.controladorBusqueda,
-                      decoration: const InputDecoration(
-                        labelText: 'Origen',
-                        border: OutlineInputBorder(),
+                      child: ListView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        children: [
+                          GestureDetector(
+                            onTap: viewModel.alternarPanel,
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(
+                              width: double.infinity,
+                              height: 50,
+                              alignment: Alignment.topCenter,
+                              color: Colors.transparent,
+                              child: Container(
+                                width: 60,
+                                height: 6,
+                                margin: const EdgeInsets.only(top: 10),
+                                decoration: BoxDecoration(
+                                  color: const Color.fromARGB(255, 150, 7, 7),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                          ),
+                          GridView.count(
+                            crossAxisCount: 2,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 2.2,
+                            children: [
+                              _baldosa(
+                                Icons.warning_amber,
+                                'Reportar Incidente',
+                                () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const PantallaReporteIncidente(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              _baldosa(Icons.home, 'Lugares Frecuentes', () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const PantallaListaLugaresFrecuentes(),
+                                  ),
+                                );
+                              }),
+                              _baldosa(Icons.alarm, 'Alarmas', () {}),
+                              _baldosa(Icons.stars, 'Mis Puntos', () {}),
+                            ],
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: viewModel.controladorDestino,
-                      decoration: const InputDecoration(
-                        labelText: 'Destino',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            },
+              ],
+            ),
           ),
         ],
       ),

@@ -44,7 +44,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
           });
         }
         return Scaffold(
-          body: Padding(
+          body: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

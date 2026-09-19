@@ -1,16 +1,19 @@
+import 'package:flutter/material.dart';
 
-import 'package:flutter/widgets.dart';
-
+/// ViewModel de la pantalla principal.
+/// Maneja los campos de origen y destino, y el panel deslizable inferior.
 class PrincipalViewModel extends ChangeNotifier {
   final TextEditingController controladorBusqueda = TextEditingController();
   final TextEditingController controladorDestino = TextEditingController();
-  final DraggableScrollableController controladorPanel = DraggableScrollableController();
 
+  final DraggableScrollableController controladorPanel =
+      DraggableScrollableController();
+
+  /// Abre o cierra el panel deslizable según su posición actual.
   void alternarPanel() {
-    if (!controladorPanel.isAttached) return; // evita crash si aún no se montó
     final abierto = controladorPanel.size > 0.2;
     controladorPanel.animateTo(
-      abierto ? 0.1 : 0.35,
+      abierto ? 0.1 : 0.6,
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
     );
