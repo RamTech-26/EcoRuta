@@ -4,8 +4,7 @@ import '../modelos/incidente.dart';
 import '../servicios/incidente_servicio.dart';
 
 /// ViewModel de incidentes.
-/// Guarda los tipos marcados en el formulario y maneja
-/// el guardado y la lista de incidentes reportados.
+/// Maneja el formulario de reporte y la lista de incidentes guardados.
 class IncidenteViewModel extends ChangeNotifier {
   final IncidenteServicio _servicio = IncidenteServicio();
 
@@ -19,14 +18,12 @@ class IncidenteViewModel extends ChangeNotifier {
     'Otros',
   ];
 
-  // Tipos marcados en el formulario
+  // Tipos marcados
   final List<String> _seleccionados = [];
   List<String> get seleccionados => _seleccionados;
 
-  /// ¿Está marcado este tipo?
   bool estaSeleccionado(String tipo) => _seleccionados.contains(tipo);
 
-  /// Marca o desmarca un tipo.
   void alternarTipo(String tipo, bool marcado) {
     if (marcado) {
       _seleccionados.add(tipo);
@@ -36,7 +33,6 @@ class IncidenteViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// ¿Hay que mostrar el campo "Otros"?
   bool get mostrarCampoOtros => _seleccionados.contains('Otros');
 
   // Estado de la lista de incidentes
@@ -49,7 +45,6 @@ class IncidenteViewModel extends ChangeNotifier {
   String? get error => _error;
   bool get estaVacio => _incidentes.isEmpty && !_cargando && _error == null;
 
-  /// Carga todos los incidentes desde la base.
   Future<void> cargarIncidentes() async {
     _cargando = true;
     _error = null;
@@ -64,7 +59,7 @@ class IncidenteViewModel extends ChangeNotifier {
     }
   }
 
-  /// Guarda un incidente nuevo con los datos del formulario.
+  /// Guarda un incidente nuevo. Devuelve true si salió bien.
   Future<bool> guardarIncidente({
     required String descripcion,
     required String calle,
@@ -104,7 +99,6 @@ class IncidenteViewModel extends ChangeNotifier {
     }
   }
 
-  /// Elimina un incidente por su id.
   Future<void> eliminarIncidente(String id) async {
     final respaldo = List<Incidente>.from(_incidentes);
     _incidentes.removeWhere((i) => i.id == id);
@@ -118,7 +112,6 @@ class IncidenteViewModel extends ChangeNotifier {
     }
   }
 
-  /// Limpia el formulario después de guardar.
   void limpiarFormulario() {
     _seleccionados.clear();
     _error = null;
