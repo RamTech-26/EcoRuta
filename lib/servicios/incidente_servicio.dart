@@ -1,15 +1,15 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-import '../modelos/usuario.dart';
+import '../modelos/incidente.dart';
 
-/// Servicio de persistencia de usuarios en SQLite.
-/// Maneja el alta, la búsqueda y la actualización de usuarios registrados.
-class UsuarioServicio {
+/// Servicio de persistencia de incidentes reportados.
+/// Guarda, lista y elimina incidentes en SQLite.
+class IncidenteServicio {
   static const _nombreDB = 'ecoruta.db';
-  static const _version = 1; // se reinicia la versión: DB nueva al reinstalar
+  static const _version = 1;
 
-  /// Abre (o crea) la base de datos con las tablas necesarias.
+  /// Abre la base de datos y asegura que la tabla exista.
   Future<Database> _abrirDB() async {
     return openDatabase(
       join(await getDatabasesPath(), _nombreDB),
@@ -50,37 +50,26 @@ class UsuarioServicio {
     );
   }
 
-  /// Guarda un usuario nuevo o actualiza uno existente.
-  Future<void> guardar(Usuario usuario) async {
+  /// Guarda un incidente nuevo.
+  Future<void> guardar(Incidente incidente) async {
     final db = await _abrirDB();
     await db.insert(
-      'usuarios',
-      usuario.toMap(),
+      'incidentes',
+      incidente.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
-  /// Busca un usuario por nombre de usuario (para login).
-  Future<Usuario?> obtenerPorUsuario(String usuario) async {
+  /// Devuelve todos los incidentes, ordenados por fecha descendente (más nuevos primero).
+  Future<List<Incidente>> obtenerTodos() async {
     final db = await _abrirDB();
-    final res = await db.query(
-      'usuarios',
-      where: 'usuario = ?',
-      whereArgs: [usuario],
-    );
-    if (res.isEmpty) return null;
-    return Usuario.fromMap(res.first);
+    final res = await db.query('incidentes', orderBy: 'fecha DESC');
+    return res.map((e) => Incidente.fromMap(e)).toList();
   }
 
-  /// Verifica si ya existe un usuario con ese nombre.
-  Future<bool> existeUsuario(String usuario) async {
+  /// Elimina un incidente por su id.
+  Future<void> eliminar(String id) async {
     final db = await _abrirDB();
-    final res = await db.query(
-      'usuarios',
-      where: 'usuario = ?',
-      whereArgs: [usuario],
-      limit: 1,
-    );
-    return res.isNotEmpty;
+    await db.delete('incidentes', where: 'id = ?', whereArgs: [id]);
   }
 }

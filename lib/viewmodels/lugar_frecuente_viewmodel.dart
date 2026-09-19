@@ -4,7 +4,6 @@ import '../servicios/lugar_frecuente_servicio.dart';
 
 class LugarFrecuenteViewModel extends ChangeNotifier {
   final LugarFrecuenteServicio _servicio = LugarFrecuenteServicio();
-
   List<LugarFrecuente> _lugares = [];
   bool _cargando = false;
   String? _error;
@@ -12,7 +11,7 @@ class LugarFrecuenteViewModel extends ChangeNotifier {
   List<LugarFrecuente> get lugares => _lugares;
   bool get cargando => _cargando;
   String? get error => _error;
-  bool get estaVacio => _lugares.isEmpty && !_cargando;
+  bool get estaVacio => _lugares.isEmpty &&!_cargando && _error == null;
 
   Future<void> cargarLugares() async {
     _cargando = true;
@@ -29,16 +28,10 @@ class LugarFrecuenteViewModel extends ChangeNotifier {
   }
 
   Future<void> agregarLugar(LugarFrecuente lugar) async {
-    try {
-      await _servicio.guardar(lugar);
-      await cargarLugares();
-    } catch (e) {
-      _error = 'No se pudo guardar';
-      notifyListeners();
-    }
+    await _servicio.guardar(lugar);
+    await cargarLugares();
   }
 
-  // Patrón respaldo + rollback del apunte
   Future<void> eliminarLugar(String id) async {
     final respaldo = List<LugarFrecuente>.from(_lugares);
     _lugares.removeWhere((l) => l.id == id);
@@ -46,29 +39,27 @@ class LugarFrecuenteViewModel extends ChangeNotifier {
     try {
       await _servicio.eliminar(id);
     } catch (e) {
-      _lugares = respaldo; // rollback si falla
-      _error = 'No se pudo eliminar';
+      _lugares = respaldo;
+      _error = e.toString();
       notifyListeners();
     }
   }
 
   Future<void> reordenar(int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) newIndex -= 1;
-    final respaldo = List<LugarFrecuente>.from(_lugares);
+    if (newIndex > oldIndex) newIndex--;
     final item = _lugares.removeAt(oldIndex);
     _lugares.insert(newIndex, item);
     notifyListeners();
     try {
-      await _servicio.actualizarOrdenBatch(_lugares);
+      await _servicio.actualizarOrden(_lugares);
     } catch (e) {
-      _lugares = respaldo; // rollback
-      _error = 'No se pudo reordenar';
-      notifyListeners();
+      _error = e.toString();
+      await cargarLugares();
     }
   }
 
-  void limpiarError() {
-    _error = null;
-    notifyListeners();
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

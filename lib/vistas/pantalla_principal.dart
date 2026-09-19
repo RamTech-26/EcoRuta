@@ -4,6 +4,7 @@ import '../viewmodels/principal_viewmodel.dart';
 import 'pantalla_lista_lugares_frecuentes.dart';
 import 'pantalla_reporte_incidente.dart';
 
+
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
   @override
