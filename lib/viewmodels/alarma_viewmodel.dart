@@ -31,14 +31,33 @@ class AlarmaViewModel extends ChangeNotifier {
     await cargarAlarmas();
   }
 
+  // Modifica el estado 'activa' manteniendo la posición fija sin recargar la lista
   Future<void> alternarActivacion(Alarma alarma, bool activa) async {
-    final alarmaActualizada = alarma.copyWith(activa: activa);
-    await _servicio.guardar(alarmaActualizada);
-    await cargarAlarmas();
+    final index = _alarmas.indexWhere((a) => a.id == alarma.id);
+    if (index != -1) {
+      _alarmas[index] = _alarmas[index].copyWith(activa: activa);
+      notifyListeners(); // Redibujado local en pantalla sin alterar la posición
+      await _servicio.guardar(_alarmas[index]);
+    }
   }
 
   Future<void> eliminarAlarma(String id) async {
+    _alarmas.removeWhere((a) => a.id == id);
+    notifyListeners();
     await _servicio.eliminar(id);
-    await cargarAlarmas();
+  }
+
+  // Mueve los ítems al mantener presionado (onLongPress)
+  Future<void> reordenar(int oldIndex, int newIndex) async {
+    if (newIndex > oldIndex) newIndex--;
+    final item = _alarmas.removeAt(oldIndex);
+    _alarmas.insert(newIndex, item);
+    notifyListeners();
+    try {
+      await _servicio.actualizarOrden(_alarmas);
+    } catch (e) {
+      _error = e.toString();
+      await cargarAlarmas();
+    }
   }
 }

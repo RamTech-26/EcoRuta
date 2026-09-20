@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../viewmodels/alarma_viewmodel.dart';
-import 'pantalla_formulario_alarma.dart'; // La crearemos en el próximo paso
+import 'pantalla_formulario_alarma.dart';
 
 class PantallaAlarmas extends StatefulWidget {
   const PantallaAlarmas({super.key});
@@ -15,14 +16,12 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
   @override
   void initState() {
     super.initState();
-    // Inicializa el ViewModel y carga las alarmas guardadas en SQLite[cite: 16]
     viewModel = AlarmaViewModel();
     viewModel.cargarAlarmas();
   }
 
   @override
   void dispose() {
-    // Libera el listener del ViewModel para evitar fugas de memoria[cite: 13, 16]
     viewModel.dispose();
     super.dispose();
   }
@@ -31,7 +30,6 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Mis Alarmas')),
-      // ListenableBuilder redibuja esta porción cuando notifyListeners() es llamado[cite: 13]
       body: ListenableBuilder(
         listenable: viewModel,
         builder: (context, _) {
@@ -43,15 +41,15 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
             return const Center(child: Text('No hay alarmas configuradas.'));
           }
 
-          // Renderiza la lista dinámica de alarmas[cite: 15]
-          return ListView.builder(
+          // Permite reordenar con onLongPress y mantiene posiciones fijas
+          return ReorderableListView.builder(
             itemCount: viewModel.alarmas.length,
+            onReorder: viewModel.reordenar,
             itemBuilder: (context, index) {
               final alarma = viewModel.alarmas[index];
-              
-              // Dismissible permite eliminar el ítem deslizando hacia la izquierda[cite: 5, 12]
+
               return Dismissible(
-                key: Key(alarma.id),
+                key: Key(alarma.id), // Key única por elemento[cite: 8, 24]
                 direction: DismissDirection.endToStart,
                 background: Container(
                   color: Colors.red,
@@ -60,18 +58,21 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
                   child: const Icon(Icons.delete, color: Colors.white),
                 ),
                 onDismissed: (_) {
-                  // Borra físicamente la alarma de la base de datos[cite: 12]
                   viewModel.eliminarAlarma(alarma.id);
                 },
                 child: SwitchListTile(
                   title: Text(
-                    alarma.hora, 
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    alarma.hora,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  subtitle: const Text('Alarma activa'),
+                  subtitle: Text(
+                    'Días: ${alarma.dias}',
+                  ), // Muestra los días en el subtítulo
                   value: alarma.activa,
                   onChanged: (valor) {
-                    // Alterna el switch visual y actualiza en BD local
                     viewModel.alternarActivacion(alarma, valor);
                   },
                 ),
@@ -82,7 +83,6 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navega al formulario apilando la pantalla nueva[cite: 3, 8]
           Navigator.push(
             context,
             MaterialPageRoute(
