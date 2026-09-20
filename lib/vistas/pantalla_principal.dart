@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../viewmodels/principal_viewmodel.dart';
 import 'pantalla_lista_lugares_frecuentes.dart';
 import 'pantalla_reporte_incidente.dart';
-
+import 'pantalla_puntos.dart';
+import 'pantalla_alarmas.dart';
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
@@ -150,8 +151,24 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                   ),
                                 );
                               }),
-                              _baldosa(Icons.alarm, 'Alarmas', () {}),
-                              _baldosa(Icons.stars, 'Mis Puntos', () {}),
+                              _baldosa(Icons.alarm, 'Alarmas', () {
+                                // PASO 1: Navigator.push le pide a Flutter que agregue una pantalla nueva "arriba" de la actual.
+                                Navigator.push(
+                                  context,
+                                  // PASO 2: MaterialPageRoute define CUÁL pantalla abrir: en este caso, PantallaAlarmas[cite: 8].
+                                  MaterialPageRoute(
+                                    builder: (_) => const PantallaAlarmas(),
+                                  ),
+                                );
+                              }),
+                              _baldosa(Icons.stars, 'Mis Puntos', () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const PantallaPuntos(),
+                                  ),
+                                );
+                              }),
                             ],
                           ),
                         ],

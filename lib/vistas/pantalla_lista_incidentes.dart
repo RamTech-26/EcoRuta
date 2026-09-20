@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../modelos/incidente.dart';
 import '../viewmodels/incidente_viewmodel.dart';
 
+import 'dart:async';
+
 /// Pantalla que muestra todos los incidentes reportados por el usuario.
 class PantallaListaIncidentes extends StatefulWidget {
   const PantallaListaIncidentes({super.key});
@@ -31,29 +33,32 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
   }
 
   /// Pide confirmación y elimina el incidente si el usuario acepta.
-  Future<void> _confirmarEliminar(Incidente incidente) async {
-    final confirmado = await showDialog<bool>(
+  /// Muestra un diálogo con el estado actual del reporte.
+  void _verEstado(Incidente incidente) {
+    showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminar incidente'),
-        content: Text(
-          '¿Querés eliminar el reporte de "${incidente.tipos.join(', ')}"?',
-        ),
+        title: const Text('Estado del reporte'),
+        content: const Text('Reporte en Tratamiento'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFFC62828),
-            ),
-            child: const Text('Eliminar'),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
           ),
         ],
       ),
     );
+  }
+
+  /// Pide confirmación con cuenta regresiva de 3 segundos antes de eliminar.
+  Future<void> _confirmarEliminar(Incidente incidente) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+          _DialogoEliminarIncidente(descripcion: incidente.tipos.join(', ')),
+    );
+    if (!mounted) return;
     if (confirmado == true) {
       await viewModel.eliminarIncidente(incidente.id);
     }
@@ -88,7 +93,9 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
             return Center(child: Text(viewModel.error!));
           }
           if (viewModel.estaVacio) {
-            return const Center(child: Text('Todavía no reportaste incidentes'));
+            return const Center(
+              child: Text('Todavía no reportaste incidentes'),
+            );
           }
 
           return ListView.builder(
@@ -113,13 +120,47 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
                         Text('📝 ${incidente.descripcion}'),
                       Text(
                         '🕐 ${_formatearFecha(incidente.fecha)}',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _confirmarEliminar(incidente),
+                  trailing: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (opcion) {
+                      if (opcion == 'estado') {
+                        _verEstado(incidente);
+                      } else if (opcion == 'eliminar') {
+                        _confirmarEliminar(incidente);
+                      }
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: 'estado',
+                        child: Row(
+                          children: [
+                            Icon(Icons.info_outline),
+                            SizedBox(width: 8),
+                            Text('Ver estado'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'eliminar',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text(
+                              'Eliminar',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -127,6 +168,66 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
           );
         },
       ),
+    );
+  }
+}
+
+/// Diálogo que espera 3 segundos antes de habilitar el botón de eliminar.
+class _DialogoEliminarIncidente extends StatefulWidget {
+  final String descripcion;
+  const _DialogoEliminarIncidente({required this.descripcion});
+
+  @override
+  State<_DialogoEliminarIncidente> createState() =>
+      _DialogoEliminarIncidenteState();
+}
+
+class _DialogoEliminarIncidenteState extends State<_DialogoEliminarIncidente> {
+  int _segundos = 3;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      if (_segundos > 0) {
+        setState(() => _segundos--);
+      } else {
+        t.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ok = _segundos == 0;
+    return AlertDialog(
+      title: const Text('Eliminar incidente'),
+      content: Text(
+        'Se eliminará el reporte "${widget.descripcion}".\n\n'
+        '${ok ? '¿Confirmás?' : 'Podrás confirmar en $_segundos seg.'}',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: ok ? () => Navigator.pop(context, true) : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+          ),
+          child: Text(ok ? 'Eliminar' : 'Eliminar ($_segundos)'),
+        ),
+      ],
     );
   }
 }
