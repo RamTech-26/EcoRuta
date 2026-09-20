@@ -1,37 +1,14 @@
+import 'package:ecoruta_2026/servicios/database_helper.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 
 import '../modelos/lugar_frecuente.dart';
 
 class LugarFrecuenteServicio {
-  static const _nombreDB = 'ecoruta.db';
-  static const _version = 3;
-
-  Future<Database> _abrirDB() async {
-    return openDatabase(
-      join(await getDatabasesPath(), _nombreDB),
-      version: _version,
-      onCreate: (db, version) async {
-        await db.execute(
-          'CREATE TABLE IF NOT EXISTS lugares_frecuentes(id TEXT PRIMARY KEY, nombre TEXT NOT NULL, direccion TEXT NOT NULL, latitud REAL NOT NULL, longitud REAL NOT NULL, icono TEXT NOT NULL, orden INTEGER NOT NULL)',
-        );
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        await db.execute(
-          'CREATE TABLE IF NOT EXISTS lugares_frecuentes(id TEXT PRIMARY KEY, nombre TEXT NOT NULL, direccion TEXT NOT NULL, latitud REAL NOT NULL, longitud REAL NOT NULL, icono TEXT NOT NULL, orden INTEGER NOT NULL)',
-        );
-      },
-    );
-  }
-
-  Future<List<LugarFrecuente>> obtenerTodos() async {
-    final db = await _abrirDB();
-    final res = await db.query('lugares_frecuentes', orderBy: 'orden ASC');
-    return res.map((e) => LugarFrecuente.fromMap(e)).toList();
-  }
+  final DatabaseHelper _dbHelper = DatabaseHelper();
+  
 
   Future<void> guardar(LugarFrecuente lugar) async {
-    final db = await _abrirDB();
+    final db = await _dbHelper.database;
     await db.insert(
       'lugares_frecuentes',
       lugar.toMap(),
@@ -39,13 +16,19 @@ class LugarFrecuenteServicio {
     );
   }
 
+  Future<List<LugarFrecuente>> obtenerTodos() async {
+  final db = await _dbHelper.database;
+  final res = await db.query('lugares_frecuentes', orderBy: 'orden ASC');
+  return res.map((e) => LugarFrecuente.fromMap(e)).toList();
+}
+
   Future<void> eliminar(String id) async {
-    final db = await _abrirDB();
+    final db = await _dbHelper.database;
     await db.delete('lugares_frecuentes', where: 'id =?', whereArgs: [id]);
   }
 
   Future<void> actualizarOrden(List<LugarFrecuente> lugares) async {
-    final db = await _abrirDB();
+    final db = await _dbHelper.database;
     final batch = db.batch();
     for (var i = 0; i < lugares.length; i++) {
       batch.update(

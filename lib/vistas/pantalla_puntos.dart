@@ -18,7 +18,7 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
   // --- Datos hardcodeados (temporales) ---
 
   /// Viajes del mes actual: cada uno con origen, destino, puntos y fecha.
-    final List<Map<String, dynamic>> _viajesMesActual = const [
+  final List<Map<String, dynamic>> _viajesMesActual = const [
     {
       'origen': 'Casa',
       'destino': 'Trabajo',
@@ -95,12 +95,13 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
   Widget _vistaMesActual() {
     return Column(
       children: [
-        // Encabezado con el total del mes
+        // Encabezado con el total del mes (Padding dinámico para evitar overflow)
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
           color: Colors.green.withOpacity(0.15),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 'Puntaje de ${_nombreMesActual()}',
@@ -124,21 +125,25 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
             itemCount: _viajesMesActual.length,
             itemBuilder: (context, i) {
               final viaje = _viajesMesActual[i];
-              return Card(
-                child: ListTile(
-                  leading: const Icon(Icons.route, color: Colors.green),
-                  title: Text(
-                    '${viaje['origen']} → ${viaje['destino']}',
-                  ),
-                  subtitle: Text(
-                    viaje['fecha'] as String,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  trailing: Text(
-                    '+${viaje['puntos']} pts',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
+              // Tarjeta con altura fija
+              return SizedBox(
+                height: 80,
+                child: Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.route, color: Colors.green),
+                    title: Text(
+                      '${viaje['origen']} → ${viaje['destino']}',
+                    ),
+                    subtitle: Text(
+                      viaje['fecha'] as String,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    trailing: Text(
+                      '+${viaje['puntos']} pts',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
                     ),
                   ),
                 ),
@@ -154,11 +159,13 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
   Widget _vistaAcumulado() {
     return Column(
       children: [
+        // Encabezado con Padding dinámico
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
           color: Colors.blue.withOpacity(0.15),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
                 'Puntaje acumulado total',
@@ -183,22 +190,26 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
             itemBuilder: (context, i) {
               final mes = _puntajesPorMes[i];
               final esElMejor = mes['mes'] == _mesConMasPuntos;
-              return Card(
-                color: esElMejor ? Colors.amber.withOpacity(0.3) : null,
-                child: ListTile(
-                  leading: Icon(
-                    esElMejor ? Icons.emoji_events : Icons.calendar_month,
-                    color: esElMejor ? Colors.amber[800] : Colors.blue,
-                  ),
-                  title: Text(
-                    mes['mes'] as String,
-                    style: TextStyle(
-                      fontWeight: esElMejor ? FontWeight.bold : FontWeight.normal,
+              // Tarjeta con altura fija
+              return SizedBox(
+                height: 80,
+                child: Card(
+                  color: esElMejor ? Colors.amber.withOpacity(0.3) : null,
+                  child: ListTile(
+                    leading: Icon(
+                      esElMejor ? Icons.emoji_events : Icons.calendar_month,
+                      color: esElMejor ? Colors.amber[800] : Colors.blue,
                     ),
-                  ),
-                  trailing: Text(
-                    '${mes['puntos']} pts',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    title: Text(
+                      mes['mes'] as String,
+                      style: TextStyle(
+                        fontWeight: esElMejor ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    trailing: Text(
+                      '${mes['puntos']} pts',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               );
@@ -213,11 +224,13 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
   Widget _vistaCanje() {
     return Column(
       children: [
+        // Encabezado con Padding dinámico
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
           color: Colors.purple.withOpacity(0.15),
           child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 'Canje de puntos',
@@ -237,15 +250,19 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
             itemCount: _recompensas.length,
             itemBuilder: (context, i) {
               final r = _recompensas[i];
-              return Card(
-                child: ListTile(
-                  leading: Icon(r['icono'] as IconData, color: Colors.purple),
-                  title: Text(r['nombre'] as String),
-                  trailing: Text(
-                    '${r['costo']} pts',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purple,
+              // Tarjeta con altura fija
+              return SizedBox(
+                height: 80,
+                child: Card(
+                  child: ListTile(
+                    leading: Icon(r['icono'] as IconData, color: Colors.purple),
+                    title: Text(r['nombre'] as String),
+                    trailing: Text(
+                      '${r['costo']} pts',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.purple,
+                      ),
                     ),
                   ),
                 ),
@@ -268,9 +285,27 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
             padding: const EdgeInsets.all(12),
             child: SegmentedButton<int>(
               segments: const [
-                ButtonSegment(value: 0, label: Text('Mes actual')),
-                ButtonSegment(value: 1, label: Text('Acumulado')),
-                ButtonSegment(value: 2, label: Text('Canje')),
+                ButtonSegment(
+                  value: 0, 
+                  label: SizedBox(
+                    width: 80, 
+                    child: Center(child: Text('Mes actual', textAlign: TextAlign.center, style: TextStyle(fontSize: 12)))
+                  )
+                ),
+                ButtonSegment(
+                  value: 1, 
+                  label: SizedBox(
+                    width: 80, 
+                    child: Center(child: Text('Acumulado', textAlign: TextAlign.center, style: TextStyle(fontSize: 12)))
+                  )
+                ),
+                ButtonSegment(
+                  value: 2, 
+                  label: SizedBox(
+                    width: 80, 
+                    child: Center(child: Text('Canje', textAlign: TextAlign.center, style: TextStyle(fontSize: 12)))
+                  )
+                ),
               ],
               selected: {_vistaSeleccionada},
               onSelectionChanged: (seleccion) {
