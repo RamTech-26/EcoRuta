@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../modelos/alarma.dart';
 import '../viewmodels/alarma_viewmodel.dart';
 import 'pantalla_formulario_alarma.dart';
 
@@ -26,6 +27,18 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
     super.dispose();
   }
 
+  void _abrirFormulario({Alarma? alarma}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PantallaFormularioAlarma(
+          viewModel: viewModel,
+          alarmaEditar: alarma,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +54,6 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
             return const Center(child: Text('No hay alarmas configuradas.'));
           }
 
-          // Permite reordenar con onLongPress y mantiene posiciones fijas
           return ReorderableListView.builder(
             itemCount: viewModel.alarmas.length,
             onReorder: viewModel.reordenar,
@@ -49,7 +61,7 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
               final alarma = viewModel.alarmas[index];
 
               return Dismissible(
-                key: Key(alarma.id), // Key única por elemento[cite: 8, 24]
+                key: Key(alarma.id),
                 direction: DismissDirection.endToStart,
                 background: Container(
                   color: Colors.red,
@@ -60,21 +72,25 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
                 onDismissed: (_) {
                   viewModel.eliminarAlarma(alarma.id);
                 },
-                child: SwitchListTile(
+                child: ListTile(
+                  key: Key('tile_${alarma.id}'),
+                  onTap: () => _abrirFormulario(alarma: alarma),
                   title: Text(
                     alarma.hora,
                     style: const TextStyle(
-                      fontSize: 24,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   subtitle: Text(
-                    'Días: ${alarma.dias}',
-                  ), // Muestra los días en el subtítulo
-                  value: alarma.activa,
-                  onChanged: (valor) {
-                    viewModel.alternarActivacion(alarma, valor);
-                  },
+                    alarma.dias.isEmpty ? 'Sin días' : 'Días: ${alarma.dias}',
+                  ),
+                  trailing: Switch(
+                    value: alarma.activa,
+                    onChanged: (valor) {
+                      viewModel.alternarActivacion(alarma, valor);
+                    },
+                  ),
                 ),
               );
             },
@@ -82,14 +98,7 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => PantallaFormularioAlarma(viewModel: viewModel),
-            ),
-          );
-        },
+        onPressed: () => _abrirFormulario(),
         child: const Icon(Icons.add),
       ),
     );
