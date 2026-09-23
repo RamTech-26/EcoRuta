@@ -19,6 +19,14 @@ class PrincipalViewModel extends ChangeNotifier {
     );
   }
 
+  void cerrarPanel() {
+  controladorPanel.animateTo(
+    0.1,
+    duration: const Duration(milliseconds: 250),
+    curve: Curves.easeInOut,
+  );
+}
+
   @override
   void dispose() {
     controladorBusqueda.dispose();

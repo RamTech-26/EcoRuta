@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../modelos/incidente.dart';
 import '../viewmodels/incidente_viewmodel.dart';
 
 import 'dart:async';
 
-/// Pantalla que muestra todos los incidentes reportados por el usuario.
 class PantallaListaIncidentes extends StatefulWidget {
   const PantallaListaIncidentes({super.key});
 
@@ -32,8 +32,6 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
     super.dispose();
   }
 
-  /// Pide confirmación y elimina el incidente si el usuario acepta.
-  /// Muestra un diálogo con el estado actual del reporte.
   void _verEstado(Incidente incidente) {
     showDialog(
       context: context,
@@ -50,7 +48,6 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
     );
   }
 
-  /// Pide confirmación con cuenta regresiva de 3 segundos antes de eliminar.
   Future<void> _confirmarEliminar(Incidente incidente) async {
     final confirmado = await showDialog<bool>(
       context: context,
@@ -64,7 +61,6 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
     }
   }
 
-  /// Formatea la fecha ISO a algo legible: "12/10/2026 15:30".
   String _formatearFecha(String iso) {
     try {
       final fecha = DateTime.parse(iso);
@@ -82,91 +78,125 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Incidentes reportados')),
-      body: ListenableBuilder(
-        listenable: viewModel,
-        builder: (context, _) {
-          if (viewModel.cargando) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (viewModel.error != null) {
-            return Center(child: Text(viewModel.error!));
-          }
-          if (viewModel.estaVacio) {
-            return const Center(
-              child: Text('Todavía no reportaste incidentes'),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: viewModel.incidentes.length,
-            itemBuilder: (context, index) {
-              final incidente = viewModel.incidentes[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: ListTile(
-                  leading: const Icon(
-                    Icons.warning_amber,
-                    color: Colors.orange,
-                    size: 32,
-                  ),
-                  title: Text(incidente.tipos.join(', ')),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (incidente.calle.isNotEmpty)
-                        Text('📍 ${incidente.calle}'),
-                      if (incidente.descripcion.isNotEmpty)
-                        Text('📝 ${incidente.descripcion}'),
-                      Text(
-                        '🕐 ${_formatearFecha(incidente.fecha)}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                  trailing: PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert),
-                    onSelected: (opcion) {
-                      if (opcion == 'estado') {
-                        _verEstado(incidente);
-                      } else if (opcion == 'eliminar') {
-                        _confirmarEliminar(incidente);
-                      }
-                    },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(
-                        value: 'estado',
-                        child: Row(
-                          children: [
-                            Icon(Icons.info_outline),
-                            SizedBox(width: 8),
-                            Text('Ver estado'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'eliminar',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text(
-                              'Eliminar',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+      appBar: AppBar(
+        title: Text(
+          'Incidentes reportados',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFF0F766E),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: Container(
+        color: Colors.white,
+        child: ListenableBuilder(
+          listenable: viewModel,
+          builder: (context, _) {
+            if (viewModel.cargando) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (viewModel.error != null) {
+              return Center(child: Text(viewModel.error!));
+            }
+            if (viewModel.estaVacio) {
+              return Center(
+                child: Text(
+                  'Todavía no reportaste incidentes',
+                  style: GoogleFonts.poppins(color: Colors.black54),
                 ),
               );
-            },
-          );
-        },
+            }
+
+            return ListView.builder(
+              itemCount: viewModel.incidentes.length,
+              itemBuilder: (context, index) {
+                final incidente = viewModel.incidentes[index];
+                return Card(
+                  elevation: 3,
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(
+                      Icons.warning_amber,
+                      color: Color(0xFF0F766E), // <-- tu color
+                      size: 32,
+                    ),
+                    title: Text(
+                      incidente.tipos.join(', '),
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (incidente.calle.isNotEmpty)
+                          Text(
+                            '📍 ${incidente.calle}',
+                            style: GoogleFonts.poppins(color: Colors.black54),
+                          ),
+                        if (incidente.descripcion.isNotEmpty)
+                          Text(
+                            '📝 ${incidente.descripcion}',
+                            style: GoogleFonts.poppins(color: Colors.black54),
+                          ),
+                        Text(
+                          '🕐 ${_formatearFecha(incidente.fecha)}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, color: Color(0xFF0F766E)),
+                      onSelected: (opcion) {
+                        if (opcion == 'estado') {
+                          _verEstado(incidente);
+                        } else if (opcion == 'eliminar') {
+                          _confirmarEliminar(incidente);
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: 'estado',
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline),
+                              SizedBox(width: 8),
+                              Text('Ver estado'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'eliminar',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text(
+                                'Eliminar',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -222,8 +252,11 @@ class _DialogoEliminarIncidenteState extends State<_DialogoEliminarIncidente> {
         ElevatedButton(
           onPressed: ok ? () => Navigator.pop(context, true) : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+            backgroundColor: const Color(0xFFC62828),
             foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: Text(ok ? 'Eliminar' : 'Eliminar ($_segundos)'),
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../modelos/alarma.dart';
 import '../modelos/lugar_frecuente.dart';
@@ -127,132 +128,165 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
       appBar: AppBar(
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar', style: TextStyle(color: Colors.blue, fontSize: 16)),
+          child: Text(
+            'Cancelar',
+            style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
+          ),
         ),
         leadingWidth: 100,
         actions: [
           TextButton(
             onPressed: _guardar,
-            child: const Text('Guardar', style: TextStyle(color: Colors.blue, fontSize: 16)),
+            child: Text(
+              'Guardar',
+              style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
+            ),
           ),
         ],
+        backgroundColor: const Color(0xFF0F766E),
+        elevation: 0,
       ),
-      body: _cargando
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(24.0),
-              children: [
-                Center(
-                  child: InkWell(
-                    onTap: _seleccionarHora,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        _horaSeleccionada == null
-                            ? '00:00'
-                            : _horaSeleccionada!.format(context),
-                        style: const TextStyle(fontSize: 44, color: Colors.blue, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: 'Lugar Frecuente',
-                    border: OutlineInputBorder(),
-                  ),
-                  initialValue: _lugarIdSeleccionado,
-                  items: _lugares.map((lugar) {
-                    return DropdownMenuItem(
-                      value: lugar.id,
-                      child: Text(lugar.nombre),
-                    );
-                  }).toList(),
-                  onChanged: (v) => setState(() => _lugarIdSeleccionado = v),
-                ),
-                const SizedBox(height: 20),
-
-                const Text('Días de activación:', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: _diasSemana.map((dia) {
-                    final sel = _diasSeleccionados.contains(dia);
-                    return InkWell(
-                      onTap: () {
-                        setState(() {
-                          sel ? _diasSeleccionados.remove(dia) : _diasSeleccionados.add(dia);
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: 38,
-                        height: 38,
+      body: Container(
+        color: Colors.white,
+        child: _cargando
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
+                padding: const EdgeInsets.all(24.0),
+                children: [
+                  Center(
+                    child: InkWell(
+                      onTap: _seleccionarHora,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: sel ? Theme.of(context).colorScheme.primary : Colors.grey.shade200,
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        alignment: Alignment.center,
                         child: Text(
-                          dia.substring(0, 1),
-                          style: TextStyle(
-                            color: sel ? Colors.white : Colors.black,
+                          _horaSeleccionada == null
+                              ? '00:00'
+                              : _horaSeleccionada!.format(context),
+                          style: GoogleFonts.poppins(
+                            fontSize: 44,
+                            color: const Color(0xFF0F766E),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
-                SwitchListTile(
-                  title: const Text('Repeticion'),
-                  value: _loopAudio,
-                  onChanged: (v) => setState(() => _loopAudio = v),
-                ),
-                SwitchListTile(
-                  title: const Text('Vibracion'),
-                  value: _vibrar,
-                  onChanged: (v) => setState(() => _vibrar = v),
-                ),
-                ListTile(
-                  title: const Text('Sonido'),
-                  trailing: DropdownButton<String>(
-                    value: _sonido,
-                    underline: const SizedBox(),
-                    items: ['Marimba', 'Nokia', 'Samsung']
-                        .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                        .toList(),
-                    onChanged: (v) => setState(() => _sonido = v!),
-                  ),
-                ),
-                SwitchListTile(
-                  title: const Text('Volumen'),
-                  value: _volumenPersonalizado,
-                  onChanged: (v) => setState(() => _volumenPersonalizado = v),
-                ),
-                if (_volumenPersonalizado)
-                  Row(
-                    children: [
-                      const Icon(Icons.volume_down),
-                      Expanded(
-                        child: Slider(
-                          value: _volumen,
-                          onChanged: (v) => setState(() => _volumen = v),
-                        ),
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      hintText: 'Lugar Frecuente',
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
                       ),
-                    ],
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: Color(0xFF0F766E), width: 2.5),
+                      ),
+                    ),
+                    initialValue: _lugarIdSeleccionado,
+                    items: _lugares.map((lugar) {
+                      return DropdownMenuItem(
+                        value: lugar.id,
+                        child: Text(lugar.nombre, style: GoogleFonts.poppins()),
+                      );
+                    }).toList(),
+                    onChanged: (v) => setState(() => _lugarIdSeleccionado = v),
                   ),
-              ],
-            ),
+                  const SizedBox(height: 20),
+
+                  Text(
+                    'Días de activación:',
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: _diasSemana.map((dia) {
+                      final sel = _diasSeleccionados.contains(dia);
+                      return InkWell(
+                        onTap: () {
+                          setState(() {
+                            sel ? _diasSeleccionados.remove(dia) : _diasSeleccionados.add(dia);
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: sel ? const Color(0xFF0F766E) : Colors.grey.shade200,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            dia.substring(0, 1),
+                            style: TextStyle(
+                              color: sel ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+
+                  SwitchListTile(
+                    title: Text('Repetición', style: GoogleFonts.poppins()),
+                    value: _loopAudio,
+                    activeColor: const Color(0xFF0F766E),
+                    onChanged: (v) => setState(() => _loopAudio = v),
+                  ),
+                  SwitchListTile(
+                    title: Text('Vibración', style: GoogleFonts.poppins()),
+                    value: _vibrar,
+                    activeColor: const Color(0xFF0F766E),
+                    onChanged: (v) => setState(() => _vibrar = v),
+                  ),
+                  ListTile(
+                    title: Text('Sonido', style: GoogleFonts.poppins()),
+                    trailing: DropdownButton<String>(
+                      value: _sonido,
+                      underline: const SizedBox(),
+                      items: ['Marimba', 'Nokia', 'Samsung']
+                          .map((s) => DropdownMenuItem(value: s, child: Text(s, style: GoogleFonts.poppins())))
+                          .toList(),
+                      onChanged: (v) => setState(() => _sonido = v!),
+                    ),
+                  ),
+                  SwitchListTile(
+                    title: Text('Volumen personalizado', style: GoogleFonts.poppins()),
+                    value: _volumenPersonalizado,
+                    activeColor: const Color(0xFF0F766E),
+                    onChanged: (v) => setState(() => _volumenPersonalizado = v),
+                  ),
+                  if (_volumenPersonalizado)
+                    Row(
+                      children: [
+                        const Icon(Icons.volume_down, color: Color(0xFF0F766E)),
+                        Expanded(
+                          child: Slider(
+                            value: _volumen,
+                            activeColor: const Color(0xFF0F766E),
+                            onChanged: (v) => setState(() => _volumen = v),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+      ),
     );
   }
 }

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// Pantalla de puntos del usuario.
-/// Tres vistas seleccionables: mes actual, acumulado total y canje.
-/// Los datos están hardcodeados por ahora, a la espera de integrarlos
-/// con la base de datos y la lógica real de acumulación.
 class PantallaPuntos extends StatefulWidget {
   const PantallaPuntos({super.key});
 
@@ -12,12 +9,8 @@ class PantallaPuntos extends StatefulWidget {
 }
 
 class _PantallaPuntosState extends State<PantallaPuntos> {
-  /// Vista actualmente seleccionada: 0 = mes, 1 = acumulado, 2 = canje.
   int _vistaSeleccionada = 0;
 
-  // --- Datos hardcodeados (temporales) ---
-
-  /// Viajes del mes actual: cada uno con origen, destino, puntos y fecha.
   final List<Map<String, dynamic>> _viajesMesActual = const [
     {
       'origen': 'Casa',
@@ -45,7 +38,6 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
     },
   ];
 
-  /// Puntajes por mes, del más reciente al más antiguo.
   final List<Map<String, dynamic>> _puntajesPorMes = const [
     {'mes': 'Octubre 2026', 'puntos': 350},
     {'mes': 'Septiembre 2026', 'puntos': 280},
@@ -54,7 +46,6 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
     {'mes': 'Junio 2026', 'puntos': 260},
   ];
 
-  /// Recompensas disponibles para canjear.
   final List<Map<String, dynamic>> _recompensas = const [
     {'nombre': 'Café gratis', 'costo': 100, 'icono': Icons.local_cafe},
     {'nombre': 'Estacionamiento 1 hora', 'costo': 200, 'icono': Icons.local_parking},
@@ -63,15 +54,12 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
     {'nombre': 'Bicicleta municipal 1 día', 'costo': 700, 'icono': Icons.pedal_bike},
   ];
 
-  /// Devuelve el puntaje total del mes actual sumando los viajes.
   int get _totalMesActual =>
       _viajesMesActual.fold(0, (suma, v) => suma + (v['puntos'] as int));
 
-  /// Devuelve el puntaje acumulado total sumando todos los meses.
   int get _totalAcumulado =>
       _puntajesPorMes.fold(0, (suma, m) => suma + (m['puntos'] as int));
 
-  /// Devuelve el mes con más puntos (para resaltarlo).
   String get _mesConMasPuntos {
     final mejor = _puntajesPorMes.reduce(
       (a, b) => (a['puntos'] as int) > (b['puntos'] as int) ? a : b,
@@ -79,7 +67,6 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
     return mejor['mes'] as String;
   }
 
-  /// Devuelve el nombre del mes actual en español (ej: "octubre 2026").
   String _nombreMesActual() {
     const meses = [
       'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -89,31 +76,27 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
     return '${meses[hoy.month - 1]} ${hoy.year}';
   }
 
-  // --- Vistas ---
-
-  /// Vista de los viajes del mes actual.
   Widget _vistaMesActual() {
     return Column(
       children: [
-        // Encabezado con el total del mes (Padding dinámico para evitar overflow)
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-          color: Colors.green.withOpacity(0.15),
+          color: const Color(0xFF0F766E).withOpacity(0.15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 'Puntaje de ${_nombreMesActual()}',
-                style: const TextStyle(fontSize: 16),
+                style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
               ),
               const SizedBox(height: 8),
               Text(
                 '$_totalMesActual pts',
-                style: const TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: Colors.green,
+                  color: const Color(0xFF0F766E),
                 ),
               ),
             ],
@@ -125,24 +108,28 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
             itemCount: _viajesMesActual.length,
             itemBuilder: (context, i) {
               final viaje = _viajesMesActual[i];
-              // Tarjeta con altura fija
               return SizedBox(
                 height: 80,
                 child: Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: ListTile(
-                    leading: const Icon(Icons.route, color: Colors.green),
+                    leading: const Icon(Icons.route, color: Color(0xFF0F766E)),
                     title: Text(
                       '${viaje['origen']} → ${viaje['destino']}',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
                       viaje['fecha'] as String,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
                     ),
                     trailing: Text(
                       '+${viaje['puntos']} pts',
-                      style: const TextStyle(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.bold,
-                        color: Colors.green,
+                        color: const Color(0xFF0F766E),
                       ),
                     ),
                   ),
@@ -155,29 +142,27 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
     );
   }
 
-  /// Vista del puntaje acumulado, resaltando el mes con más puntos.
   Widget _vistaAcumulado() {
     return Column(
       children: [
-        // Encabezado con Padding dinámico
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-          color: Colors.blue.withOpacity(0.15),
+          color: const Color(0xFF0F766E).withOpacity(0.15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
+              Text(
                 'Puntaje acumulado total',
-                style: TextStyle(fontSize: 16),
+                style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
               ),
               const SizedBox(height: 8),
               Text(
                 '$_totalAcumulado pts',
-                style: const TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: const Color(0xFF0F766E),
                 ),
               ),
             ],
@@ -190,25 +175,28 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
             itemBuilder: (context, i) {
               final mes = _puntajesPorMes[i];
               final esElMejor = mes['mes'] == _mesConMasPuntos;
-              // Tarjeta con altura fija
               return SizedBox(
                 height: 80,
                 child: Card(
+                  elevation: 3,
                   color: esElMejor ? Colors.amber.withOpacity(0.3) : null,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: ListTile(
                     leading: Icon(
                       esElMejor ? Icons.emoji_events : Icons.calendar_month,
-                      color: esElMejor ? Colors.amber[800] : Colors.blue,
+                      color: esElMejor ? Colors.amber[800] : const Color(0xFF0F766E),
                     ),
                     title: Text(
                       mes['mes'] as String,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontWeight: esElMejor ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                     trailing: Text(
                       '${mes['puntos']} pts',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -220,26 +208,24 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
     );
   }
 
-  /// Vista de recompensas para canjear.
   Widget _vistaCanje() {
     return Column(
       children: [
-        // Encabezado con Padding dinámico
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-          color: Colors.purple.withOpacity(0.15),
-          child: const Column(
+          color: const Color(0xFF0F766E).withOpacity(0.15),
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 'Canje de puntos',
-                style: TextStyle(fontSize: 16),
+                style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 'Elegí una recompensa',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey),
               ),
             ],
           ),
@@ -250,18 +236,24 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
             itemCount: _recompensas.length,
             itemBuilder: (context, i) {
               final r = _recompensas[i];
-              // Tarjeta con altura fija
               return SizedBox(
                 height: 80,
                 child: Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: ListTile(
-                    leading: Icon(r['icono'] as IconData, color: Colors.purple),
-                    title: Text(r['nombre'] as String),
+                    leading: Icon(r['icono'] as IconData, color: const Color(0xFF0F766E)),
+                    title: Text(
+                      r['nombre'] as String,
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
                     trailing: Text(
                       '${r['costo']} pts',
-                      style: const TextStyle(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.bold,
-                        color: Colors.purple,
+                        color: const Color(0xFF0F766E),
                       ),
                     ),
                   ),
@@ -277,52 +269,97 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis Puntos')),
-      body: Column(
-        children: [
-          // Selector de vistas
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(
-                  value: 0, 
-                  label: SizedBox(
-                    width: 80, 
-                    child: Center(child: Text('Mes actual', textAlign: TextAlign.center, style: TextStyle(fontSize: 12)))
-                  )
+      appBar: AppBar(
+        title: Text(
+          'Mis Puntos',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFF0F766E),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: Container(
+        color: Colors.white,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: SegmentedButton<int>(
+                segments: const [
+                  ButtonSegment(
+                    value: 0,
+                    label: SizedBox(
+                      width: 80,
+                      child: Center(
+                        child: Text(
+                          'Mes actual',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  ButtonSegment(
+                    value: 1,
+                    label: SizedBox(
+                      width: 80,
+                      child: Center(
+                        child: Text(
+                          'Acumulado',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  ButtonSegment(
+                    value: 2,
+                    label: SizedBox(
+                      width: 80,
+                      child: Center(
+                        child: Text(
+                          'Canje',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                selected: {_vistaSeleccionada},
+                onSelectionChanged: (seleccion) {
+                  setState(() => _vistaSeleccionada = seleccion.first);
+                },
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return const Color(0xFF0F766E);
+                    }
+                    return Colors.grey.shade200;
+                  }),
+                  foregroundColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return Colors.white;
+                    }
+                    return Colors.black87;
+                  }),
                 ),
-                ButtonSegment(
-                  value: 1, 
-                  label: SizedBox(
-                    width: 80, 
-                    child: Center(child: Text('Acumulado', textAlign: TextAlign.center, style: TextStyle(fontSize: 12)))
-                  )
-                ),
-                ButtonSegment(
-                  value: 2, 
-                  label: SizedBox(
-                    width: 80, 
-                    child: Center(child: Text('Canje', textAlign: TextAlign.center, style: TextStyle(fontSize: 12)))
-                  )
-                ),
-              ],
-              selected: {_vistaSeleccionada},
-              onSelectionChanged: (seleccion) {
-                setState(() => _vistaSeleccionada = seleccion.first);
+              ),
+            ),
+            Expanded(
+              child: switch (_vistaSeleccionada) {
+                0 => _vistaMesActual(),
+                1 => _vistaAcumulado(),
+                2 => _vistaCanje(),
+                _ => const SizedBox.shrink(),
               },
             ),
-          ),
-          // Vista según la selección
-          Expanded(
-            child: switch (_vistaSeleccionada) {
-              0 => _vistaMesActual(),
-              1 => _vistaAcumulado(),
-              2 => _vistaCanje(),
-              _ => const SizedBox.shrink(),
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

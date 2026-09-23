@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'dart:async';
 
@@ -47,7 +48,19 @@ class _PantallaListaLugaresFrecuentesState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Lugares Frecuentes')),
+      appBar: AppBar(
+        title: Text(
+          'Lugares Frecuentes',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFF0F766E),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final ok = await Navigator.push<bool>(
@@ -61,72 +74,100 @@ class _PantallaListaLugaresFrecuentesState
             viewModel.cargarLugares();
           }
         },
+        backgroundColor: const Color(0xFF0F766E), // <-- tu color
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
-      body: ListenableBuilder(
-        listenable: viewModel,
-        builder: (context, _) {
-          if (viewModel.cargando)
-            return const Center(child: CircularProgressIndicator());
-          if (viewModel.error != null)
-            return Center(child: Text(viewModel.error!));
-          if (viewModel.estaVacio)
-            return const Center(child: Text('No hay lugares guardados'));
-
-          return ReorderableListView.builder(
-            itemCount: viewModel.lugares.length,
-            onReorder: viewModel.reordenar,
-            itemBuilder: (context, index) {
-              final lugar = viewModel.lugares[index];
-              return ListTile(
-                key: ValueKey(lugar.id),
-                leading: Text(
-                  _emojiDesdeNombre(lugar.icono),
-                  style: const TextStyle(fontSize: 28),
-                ),
-                title: Text(lugar.nombre),
-                subtitle: Text(lugar.direccion),
-                trailing: PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert),
-                  onSelected: (opcion) {
-                    if (opcion == 'editar') {
-                      _editarLugar(lugar);
-                    } else if (opcion == 'eliminar') {
-                      _confirmarEliminar(lugar);
-                    }
-                  },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: 'editar',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit),
-                          SizedBox(width: 8),
-                          Text('Modificar'),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'eliminar',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('Eliminar', style: TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                  ],
+      body: Container(
+        color: Colors.white,
+        child: ListenableBuilder(
+          listenable: viewModel,
+          builder: (context, _) {
+            if (viewModel.cargando) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (viewModel.error != null) {
+              return Center(child: Text(viewModel.error!));
+            }
+            if (viewModel.estaVacio) {
+              return Center(
+                child: Text(
+                  'No hay lugares guardados',
+                  style: GoogleFonts.poppins(color: Colors.black54),
                 ),
               );
-            },
-          );
-        },
+            }
+
+            return ReorderableListView.builder(
+              itemCount: viewModel.lugares.length,
+              onReorder: viewModel.reordenar,
+              itemBuilder: (context, index) {
+                final lugar = viewModel.lugares[index];
+                return Card(
+                  key: ValueKey(lugar.id),
+                  elevation: 3,
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ListTile(
+                    leading: Text(
+                      _emojiDesdeNombre(lugar.icono),
+                      style: const TextStyle(fontSize: 28),
+                    ),
+                    title: Text(
+                      lugar.nombre,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    subtitle: Text(
+                      lugar.direccion,
+                      style: GoogleFonts.poppins(color: Colors.black54),
+                    ),
+                    trailing: PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, color: Color(0xFF0F766E)),
+                      onSelected: (opcion) {
+                        if (opcion == 'editar') {
+                          _editarLugar(lugar);
+                        } else if (opcion == 'eliminar') {
+                          _confirmarEliminar(lugar);
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: 'editar',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit),
+                              SizedBox(width: 8),
+                              Text('Modificar'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'eliminar',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text('Eliminar', style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
 
-  /// Abre el formulario en modo edición con los datos del lugar.
   Future<void> _editarLugar(LugarFrecuente lugar) async {
     final actualizado = await Navigator.push<bool>(
       context,
@@ -140,9 +181,6 @@ class _PantallaListaLugaresFrecuentesState
     }
   }
 
-  /// Convierte el nombre guardado del ícono a un IconData.
-  /// Convierte el nombre guardado del ícono a un emoji.
-  /// Si ya es un emoji, lo devuelve tal cual.
   String _emojiDesdeNombre(String icono) {
     switch (icono) {
       case 'home':
@@ -211,8 +249,11 @@ class _DialogoEliminarLugarState extends State<_DialogoEliminarLugar> {
         ElevatedButton(
           onPressed: ok ? () => Navigator.pop(context, true) : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+            backgroundColor: const Color(0xFFC62828),
             foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: Text(ok ? 'Eliminar' : 'Eliminar ($_segundos)'),
         ),

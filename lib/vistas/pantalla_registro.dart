@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../viewmodels/registro_viewmodel.dart';
 
-/// Pantalla de registro de un usuario nuevo.
-/// Valida cada campo, guarda en la base de datos y luego navega al login.
 class PantallaRegistro extends StatefulWidget {
   const PantallaRegistro({super.key});
 
@@ -14,15 +13,12 @@ class PantallaRegistro extends StatefulWidget {
 class _PantallaRegistroState extends State<PantallaRegistro> {
   late final RegistroViewModel viewModel;
 
-  // Controllers de cada campo (viven en la vista, no en el ViewModel)
-  final TextEditingController controladorNombreApellido =
-      TextEditingController();
+  final TextEditingController controladorNombreApellido = TextEditingController();
   final TextEditingController controladorUsuario = TextEditingController();
   final TextEditingController controladorDni = TextEditingController();
   final TextEditingController controladorEmail = TextEditingController();
   final TextEditingController controladorContrasena = TextEditingController();
-  final TextEditingController controladorRepetirContrasena =
-      TextEditingController();
+  final TextEditingController controladorRepetirContrasena = TextEditingController();
   final TextEditingController controladorPais = TextEditingController();
   final TextEditingController controladorCiudad = TextEditingController();
   final TextEditingController controladorDepartamento = TextEditingController();
@@ -50,10 +46,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
     super.dispose();
   }
 
-  /// Muestra un diálogo para confirmar el registro.
-  /// Valida los campos y, si todo está bien, muestra el diálogo de confirmación.
   Future<void> _confirmarRegistro() async {
-    // 1) Primero validamos. Si hay errores, se muestran y no seguimos.
     final valido = viewModel.validarCampos(
       nombreApellido: controladorNombreApellido.text,
       usuario: controladorUsuario.text,
@@ -67,7 +60,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
     );
     if (!valido) return;
 
-    // 2) Si todo está bien, recién ahí mostramos el diálogo.
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -88,7 +80,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
 
     if (confirmado != true) return;
 
-    // 3) Si confirma, guardamos en la base de datos.
     await viewModel.registrar(
       nombreApellido: controladorNombreApellido.text,
       usuario: controladorUsuario.text,
@@ -107,7 +98,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
     return ListenableBuilder(
       listenable: viewModel,
       builder: (context, _) {
-        // Si se registró correctamente, avisa y vuelve al login
         if (viewModel.registrado) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
@@ -119,182 +109,302 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
         }
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Registro')),
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  // Campo: nombre y apellido
-                  TextField(
-                    controller: controladorNombreApellido,
-                    decoration: InputDecoration(
-                      labelText: 'Nombre y apellido',
-                      border: const OutlineInputBorder(),
-                      errorText: viewModel.errorNombreApellido,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Campo: usuario
-                  TextField(
-                    controller: controladorUsuario,
-                    decoration: InputDecoration(
-                      labelText: 'Usuario',
-                      border: const OutlineInputBorder(),
-                      errorText: viewModel.errorUsuario,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Campo: DNI
-                  TextField(
-                    controller: controladorDni,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'DNI',
-                      border: const OutlineInputBorder(),
-                      errorText: viewModel.errorDni,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Campo: email
-                  TextField(
-                    controller: controladorEmail,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      border: const OutlineInputBorder(),
-                      errorText: viewModel.errorEmail,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Campo: contraseña
-                  TextField(
-                    controller: controladorContrasena,
-                    obscureText: _ocultarContrasena,
-                    decoration: InputDecoration(
-                      labelText: 'Contraseña',
-                      border: const OutlineInputBorder(),
-                      errorText: viewModel.errorContrasena,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _ocultarContrasena
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _ocultarContrasena = !_ocultarContrasena;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Campo: repetir contraseña
-                  TextField(
-                    controller: controladorRepetirContrasena,
-                    obscureText: _ocultarRepetirContrasena,
-                    decoration: InputDecoration(
-                      labelText: 'Repetir contraseña',
-                      border: const OutlineInputBorder(),
-                      errorText: viewModel.errorRepetirContrasena,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _ocultarRepetirContrasena
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _ocultarRepetirContrasena =
-                                !_ocultarRepetirContrasena;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Campo: país
-                  TextField(
-                    controller: controladorPais,
-                    decoration: InputDecoration(
-                      labelText: 'País',
-                      border: const OutlineInputBorder(),
-                      errorText: viewModel.errorPais,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Campo: ciudad
-                  TextField(
-                    controller: controladorCiudad,
-                    decoration: InputDecoration(
-                      labelText: 'Ciudad',
-                      border: const OutlineInputBorder(),
-                      errorText: viewModel.errorCiudad,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Campo: departamento
-                  TextField(
-                    controller: controladorDepartamento,
-                    decoration: InputDecoration(
-                      labelText: 'Departamento',
-                      border: const OutlineInputBorder(),
-                      errorText: viewModel.errorDepartamento,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Mensaje de error general (si falla el guardado)
-                  if (viewModel.errorGeneral != null)
-                    Text(
-                      viewModel.errorGeneral!,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-
-                  // Botones: Cancelar y Confirmar
-                  Row(
+          resizeToAvoidBottomInset: false,
+          body: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/fondo.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Container(
+              color: Colors.black.withOpacity(0.4),
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: viewModel.cargando
-                              ? null
-                              : () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFC62828),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text('Cancelar'),
+                      Text(
+                        'Registro',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
+                      const SizedBox(height: 24),
+                      // Campo: nombre y apellido
+                      TextField(
+                        controller: controladorNombreApellido,
+                        decoration: InputDecoration(
+                          hintText: 'Nombre y apellido',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                          ),
+                          errorText: viewModel.errorNombreApellido,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Campo: usuario
+                      TextField(
+                        controller: controladorUsuario,
+                        decoration: InputDecoration(
+                          hintText: 'Usuario',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                          ),
+                          errorText: viewModel.errorUsuario,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Campo: DNI
+                      TextField(
+                        controller: controladorDni,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          hintText: 'DNI',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                          ),
+                          errorText: viewModel.errorDni,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Campo: email
+                      TextField(
+                        controller: controladorEmail,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          hintText: 'Email',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                          ),
+                          errorText: viewModel.errorEmail,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Campo: contraseña
+                      TextField(
+                        controller: controladorContrasena,
+                        obscureText: _ocultarContrasena,
+                        decoration: InputDecoration(
+                          hintText: 'Contraseña',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                          ),
+                          errorText: viewModel.errorContrasena,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _ocultarContrasena ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _ocultarContrasena = !_ocultarContrasena;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Campo: repetir contraseña
+                      TextField(
+                        controller: controladorRepetirContrasena,
+                        obscureText: _ocultarRepetirContrasena,
+                        decoration: InputDecoration(
+                          hintText: 'Repetir contraseña',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                          ),
+                          errorText: viewModel.errorRepetirContrasena,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _ocultarRepetirContrasena ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _ocultarRepetirContrasena = !_ocultarRepetirContrasena;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Campo: país
+                      TextField(
+                        controller: controladorPais,
+                        decoration: InputDecoration(
+                          hintText: 'País',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                          ),
+                          errorText: viewModel.errorPais,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Campo: ciudad
+                      TextField(
+                        controller: controladorCiudad,
+                        decoration: InputDecoration(
+                          hintText: 'Ciudad',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                          ),
+                          errorText: viewModel.errorCiudad,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Campo: departamento
+                      TextField(
+                        controller: controladorDepartamento,
+                        decoration: InputDecoration(
+                          hintText: 'Departamento',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                          ),
+                          errorText: viewModel.errorDepartamento,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Mensaje de error general
+                      if (viewModel.errorGeneral != null)
+                        Text(
+                          viewModel.errorGeneral!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
                         child: ElevatedButton(
-                          onPressed: viewModel.cargando
-                              ? null
-                              : _confirmarRegistro,
+                          onPressed: viewModel.cargando ? null : _confirmarRegistro,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2E7D32),
+                            backgroundColor: const Color(0xFF0F766E),
                             foregroundColor: Colors.white,
                           ),
                           child: viewModel.cargando
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                              : const Text('Confirmar'),
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text('REGISTRAR'),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      TextButton(
+                        onPressed: viewModel.cargando
+                            ? null
+                            : () => Navigator.pop(context),
+                        child: RichText(
+                          text: const TextSpan(
+                            children: [
+                              TextSpan(
+                                text: '¿Ya tenés cuenta? ',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              TextSpan(
+                                text: 'Iniciá sesión',
+                                style: TextStyle(
+                                  color: Color(0xFF0F766E),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
