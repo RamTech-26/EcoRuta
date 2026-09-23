@@ -127,13 +127,13 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
       appBar: AppBar(
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(color: Colors.blue, fontSize: 16)),
+          child: const Text('Cancelar', style: TextStyle(color: Colors.blue, fontSize: 16)),
         ),
-        leadingWidth: 80,
+        leadingWidth: 100,
         actions: [
           TextButton(
             onPressed: _guardar,
-            child: const Text('Save', style: TextStyle(color: Colors.blue, fontSize: 16)),
+            child: const Text('Guardar', style: TextStyle(color: Colors.blue, fontSize: 16)),
           ),
         ],
       ),
@@ -214,17 +214,17 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
                 const SizedBox(height: 20),
 
                 SwitchListTile(
-                  title: const Text('Loop alarm audio'),
+                  title: const Text('Repeticion'),
                   value: _loopAudio,
                   onChanged: (v) => setState(() => _loopAudio = v),
                 ),
                 SwitchListTile(
-                  title: const Text('Vibrate'),
+                  title: const Text('Vibracion'),
                   value: _vibrar,
                   onChanged: (v) => setState(() => _vibrar = v),
                 ),
                 ListTile(
-                  title: const Text('Sound'),
+                  title: const Text('Sonido'),
                   trailing: DropdownButton<String>(
                     value: _sonido,
                     underline: const SizedBox(),
@@ -235,7 +235,7 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
                   ),
                 ),
                 SwitchListTile(
-                  title: const Text('Custom volume'),
+                  title: const Text('Volumen'),
                   value: _volumenPersonalizado,
                   onChanged: (v) => setState(() => _volumenPersonalizado = v),
                 ),

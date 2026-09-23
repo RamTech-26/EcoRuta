@@ -65,7 +65,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
                 TextField(
                   controller: controladorUsuario,
                   decoration: const InputDecoration(
-                    labelText: 'Usuario',
+                    labelText: 'Email',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -110,15 +110,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
                   child: OutlinedButton.icon(
                     onPressed: viewModel.cargando
                         ? null
-                        : () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Login con Google todavía no está disponible',
-                                ),
-                              ),
-                            );
-                          },
+                        : () => viewModel.loginConGoogle(),
                     icon: const Icon(Icons.g_mobiledata),
                     label: const Text('Continuar con Google'),
                   ),

@@ -5,6 +5,9 @@ import 'pantalla_lista_lugares_frecuentes.dart';
 import 'pantalla_reporte_incidente.dart';
 import 'pantalla_puntos.dart';
 import 'pantalla_alarmas.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'pantalla_login.dart';
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
@@ -169,6 +172,27 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                   ),
                                 );
                               }),
+                              const SizedBox(height: 16),  // <-- Espacio
+                              SizedBox(                    // <-- Botón de cerrar sesión
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    await FirebaseAuth.instance.signOut();
+                                    await GoogleSignIn().signOut();
+                                    if (!context.mounted) return;
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const PantallaLogin()),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.logout),
+                                  label: const Text('Cerrar sesión'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFC62828),
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ],

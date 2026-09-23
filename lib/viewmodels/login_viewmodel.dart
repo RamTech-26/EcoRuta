@@ -1,9 +1,9 @@
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
-import '../servicios/usuario_servicio.dart';
-
 class LoginViewModel extends ChangeNotifier {
-  final UsuarioServicio _servicio = UsuarioServicio();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool _logueado = false;
   bool _cargando = false;
@@ -21,9 +21,9 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login(String nombre, String pass) async {
-    if (nombre.trim().isEmpty || pass.trim().isEmpty) {
-      _error = 'Completá usuario y contraseña';
+  Future<void> login(String email, String pass) async {
+    if (email.trim().isEmpty || pass.trim().isEmpty) {
+      _error = 'Completá email y contraseña';
       notifyListeners();
       return;
     }
@@ -31,14 +31,55 @@ class LoginViewModel extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      final usuario = await _servicio.obtenerPorUsuario(nombre.trim());
-      if (usuario == null || usuario.contrasena != pass.trim()) {
-        _error = 'Usuario o contraseña incorrectos'; 
+      await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: pass.trim(),
+      );
+      _logueado = true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        _error = 'No existe una cuenta con ese email';
+      } else if (e.code == 'wrong-password') {
+        _error = 'Contraseña incorrecta';
       } else {
-        _logueado = true;
+        _error = 'Error al iniciar sesión';
       }
     } catch (_) {
       _error = 'Error al iniciar sesión';
+    } finally {
+      _cargando = false;
+      notifyListeners();
+    }
+  }
+
+
+  Future<void> loginConGoogle() async {
+    _cargando = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        // El usuario canceló el login
+        _cargando = false;
+        notifyListeners();
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      _logueado = true;
+    } on FirebaseAuthException catch (e) {
+      _error = 'Error al iniciar sesión con Google';
+    } catch (_) {
+      _error = 'Error al iniciar sesión con Google';
     } finally {
       _cargando = false;
       notifyListeners();

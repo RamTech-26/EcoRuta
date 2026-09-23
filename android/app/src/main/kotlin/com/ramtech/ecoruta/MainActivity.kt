@@ -1,4 +1,4 @@
-package com.example.ecoruta_2026
+package com.ramtech.ecoruta
 
 import io.flutter.embedding.android.FlutterActivity
 

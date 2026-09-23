@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import '../modelos/usuario.dart';
 import '../servicios/usuario_servicio.dart';
 
@@ -151,12 +151,13 @@ class RegistroViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final existe = await _servicio.existeUsuario(usuario.trim());
-      if (existe) {
-        _errorUsuario = 'Ese usuario ya está registrado';
-        return;
-      }
+      // 1) Crear el usuario en Firebase Auth (valida que el email no exista)
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: contrasena,
+      );
 
+      // 2) Si Firebase lo creó, guardamos los datos personales en SQLite local
       final nuevoUsuario = Usuario(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         nombreApellido: nombreApellido.trim(),
@@ -171,6 +172,17 @@ class RegistroViewModel extends ChangeNotifier {
 
       await _servicio.guardar(nuevoUsuario);
       _registrado = true;
+
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        _errorEmail = 'Ese email ya está registrado';
+      } else if (e.code == 'weak-password') {
+        _errorContrasena = 'La contraseña es muy débil';
+      } else if (e.code == 'invalid-email') {
+        _errorEmail = 'Email inválido';
+      } else {
+        _errorGeneral = 'Error al registrar el usuario';
+      }
     } catch (_) {
       _errorGeneral = 'Error al registrar el usuario';
     } finally {
