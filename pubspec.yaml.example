@@ -1,0 +1,26 @@
+name: ecoruta
+description: "App de movilidad urbana de la Municipalidad de Mendoza: muestra tránsito en tiempo real, sugiere rutas y permite reportar incidentes viales."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Pendiente: Google Maps SDK (mapa con tránsito)
+  # Pendiente: Google Routes API (cálculo de rutas)
+  # Pendiente: camera / image_picker (reporte con foto)
+  # Pendiente: firebase_auth (login con Google)
+  # Pendiente: workmanager (alarmas en background)
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  # assets:
+  #   - assets/images/logo.png   # pendiente: logo institucional
