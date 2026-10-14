@@ -2,10 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../modelos/lugar_frecuente.dart';
+import '../servicios/alarma_servicio.dart';
 import '../servicios/lugar_frecuente_servicio.dart';
 
 class LugarFrecuenteViewModel extends ChangeNotifier {
   final LugarFrecuenteServicio _servicio = LugarFrecuenteServicio();
+  final AlarmaServicio _alarmaServicio = AlarmaServicio();
   List<LugarFrecuente> _lugares = [];
   bool _cargando = false;
   String? _error;
@@ -97,11 +99,27 @@ class LugarFrecuenteViewModel extends ChangeNotifier {
     await cargarLugares();
   }
 
+  /// Cuántas alarmas tiene un lugar (para avisar antes de eliminarlo).
+  Future<int> contarAlarmas(String lugarId) async {
+    try {
+      final alarmas = await _alarmaServicio.obtenerPorLugar(lugarId);
+      return alarmas.length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   Future<void> eliminarLugar(String id) async {
     final respaldo = List<LugarFrecuente>.from(_lugares);
     _lugares.removeWhere((l) => l.id == id);
     notifyListeners();
     try {
+      // El ON DELETE CASCADE solo borra las filas de la base:
+      // las alarmas programadas en el sistema hay que cancelarlas a mano.
+      final alarmas = await _alarmaServicio.obtenerPorLugar(id);
+      for (final alarma in alarmas) {
+        await _alarmaServicio.cancelarAlarmaNativa(alarma.id);
+      }
       await _servicio.eliminar(id);
     } catch (e) {
       _lugares = respaldo;

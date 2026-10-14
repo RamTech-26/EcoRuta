@@ -34,10 +34,15 @@ class _PantallaListaLugaresFrecuentesState
   }
 
   Future<void> _confirmarEliminar(LugarFrecuente lugar) async {
+    final cantidadAlarmas = await viewModel.contarAlarmas(lugar.id);
+    if (!mounted) return;
     final confirmado = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => _DialogoEliminarLugar(nombre: lugar.nombre),
+      builder: (_) => _DialogoEliminarLugar(
+        nombre: lugar.nombre,
+        cantidadAlarmas: cantidadAlarmas,
+      ),
     );
     if (!mounted) return;
     if (confirmado == true) {
@@ -205,7 +210,11 @@ class _PantallaListaLugaresFrecuentesState
 
 class _DialogoEliminarLugar extends StatefulWidget {
   final String nombre;
-  const _DialogoEliminarLugar({required this.nombre});
+  final int cantidadAlarmas;
+  const _DialogoEliminarLugar({
+    required this.nombre,
+    required this.cantidadAlarmas,
+  });
   @override
   State<_DialogoEliminarLugar> createState() => _DialogoEliminarLugarState();
 }
@@ -236,10 +245,16 @@ class _DialogoEliminarLugarState extends State<_DialogoEliminarLugar> {
   @override
   Widget build(BuildContext context) {
     final ok = _segundos == 0;
+    final cantidad = widget.cantidadAlarmas;
+    final textoAlarmas = cantidad == 0
+        ? ''
+        : cantidad == 1
+            ? ' y su alarma'
+            : ' y sus $cantidad alarmas';
     return AlertDialog(
       title: const Text('Eliminar lugar'),
       content: Text(
-        'Se eliminará "${widget.nombre}".\n\n${ok ? '¿Confirmás?' : 'Podrás confirmar en $_segundos seg.'}',
+        'Se eliminará "${widget.nombre}"$textoAlarmas.\n\n${ok ? '¿Confirmás?' : 'Podrás confirmar en $_segundos seg.'}',
       ),
       actions: [
         TextButton(

@@ -40,6 +40,17 @@ class AlarmaServicio {
     return res.map((e) => Alarma.fromMap(e)).toList();
   }
 
+  /// Alarmas asociadas a un lugar frecuente.
+  Future<List<Alarma>> obtenerPorLugar(String lugarId) async {
+    final db = await _dbHelper.database;
+    final res = await db.query(
+      'alarmas',
+      where: 'lugarId = ?',
+      whereArgs: [lugarId],
+    );
+    return res.map((e) => Alarma.fromMap(e)).toList();
+  }
+
   Future<void> guardar(Alarma alarma) async {
     final db = await _dbHelper.database;
     await db.insert(
