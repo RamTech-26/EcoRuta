@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
+
 import '../modelos/lugar_frecuente.dart';
 import '../servicios/lugar_frecuente_servicio.dart';
 
@@ -11,7 +13,70 @@ class LugarFrecuenteViewModel extends ChangeNotifier {
   List<LugarFrecuente> get lugares => _lugares;
   bool get cargando => _cargando;
   String? get error => _error;
-  bool get estaVacio => _lugares.isEmpty &&!_cargando && _error == null;
+  bool get estaVacio => _lugares.isEmpty && !_cargando && _error == null;
+
+  // ---------- Ubicación del lugar (formulario) ----------
+
+  double? _latitud;
+  double? _longitud;
+  bool _obteniendoUbicacion = false;
+  String? _avisoUbicacion;
+
+  double? get latitud => _latitud;
+  double? get longitud => _longitud;
+  bool get obteniendoUbicacion => _obteniendoUbicacion;
+  String? get avisoUbicacion => _avisoUbicacion;
+
+  /// Un lugar viejo guardado con 0,0 cuenta como "sin ubicación".
+  bool get tieneUbicacion =>
+      _latitud != null &&
+      _longitud != null &&
+      !(_latitud == 0 && _longitud == 0);
+
+  /// Al editar, carga las coordenadas que ya tenía el lugar.
+  void cargarUbicacion(double latitud, double longitud) {
+    _latitud = latitud;
+    _longitud = longitud;
+  }
+
+  Future<void> obtenerUbicacion() async {
+    _obteniendoUbicacion = true;
+    _avisoUbicacion = null;
+    notifyListeners();
+
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        _avisoUbicacion = 'Activá la ubicación del celular';
+        return;
+      }
+
+      var permiso = await Geolocator.checkPermission();
+      if (permiso == LocationPermission.denied) {
+        permiso = await Geolocator.requestPermission();
+      }
+      if (permiso == LocationPermission.denied ||
+          permiso == LocationPermission.deniedForever) {
+        _avisoUbicacion = 'Sin permiso de ubicación';
+        return;
+      }
+
+      final posicion = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+      _latitud = posicion.latitude;
+      _longitud = posicion.longitude;
+    } catch (e) {
+      _avisoUbicacion = 'No se pudo obtener la ubicación';
+    } finally {
+      _obteniendoUbicacion = false;
+      notifyListeners();
+    }
+  }
+
+  // ---------- Lista de lugares ----------
 
   Future<void> cargarLugares() async {
     _cargando = true;

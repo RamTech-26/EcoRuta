@@ -41,6 +41,7 @@ class _PantallaFormularioLugarFrecuenteState
       _nombreCtrl.text = widget.lugar!.nombre;
       _direccionCtrl.text = widget.lugar!.direccion;
       _iconoSeleccionado = _emojiDesdeNombre(widget.lugar!.icono);
+      _viewModel.cargarUbicacion(widget.lugar!.latitud, widget.lugar!.longitud);
     }
   }
 
@@ -59,20 +60,29 @@ class _PantallaFormularioLugarFrecuenteState
       );
       return;
     }
+    if (!_viewModel.tieneUbicacion) {
+      final seguir = await _confirmarSinUbicacion();
+      if (seguir != true || !mounted) return;
+    }
     setState(() => _guardando = true);
+
+    final latitud = _viewModel.latitud ?? 0;
+    final longitud = _viewModel.longitud ?? 0;
 
     final lugar = _esEdicion
         ? widget.lugar!.copyWith(
             nombre: _nombreCtrl.text.trim(),
             direccion: _direccionCtrl.text.trim(),
+            latitud: latitud,
+            longitud: longitud,
             icono: _iconoSeleccionado,
           )
         : LugarFrecuente(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             nombre: _nombreCtrl.text.trim(),
             direccion: _direccionCtrl.text.trim(),
-            latitud: 0,
-            longitud: 0,
+            latitud: latitud,
+            longitud: longitud,
             icono: _iconoSeleccionado,
             orden: 0,
           );
@@ -88,9 +98,88 @@ class _PantallaFormularioLugarFrecuenteState
     }
   }
 
+  Future<bool?> _confirmarSinUbicacion() {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Lugar sin ubicación'),
+        content: const Text(
+          'No cargaste la ubicación de este lugar. Podés guardarlo igual, '
+          'pero después no se va a poder usar para sugerir rutas.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Volver'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Guardar igual'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _seccionUbicacion() {
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, _) {
+        final vm = _viewModel;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            OutlinedButton.icon(
+              onPressed: vm.obteniendoUbicacion ? null : vm.obtenerUbicacion,
+              icon: vm.obteniendoUbicacion
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.my_location),
+              label: Text(
+                vm.tieneUbicacion
+                    ? 'Actualizar con mi ubicación actual'
+                    : 'Usar mi ubicación actual',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF0F766E),
+                side: const BorderSide(color: Color(0xFF0F766E)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (vm.avisoUbicacion != null)
+              Text(
+                vm.avisoUbicacion!,
+                style: const TextStyle(color: Colors.red),
+              )
+            else if (vm.tieneUbicacion)
+              Text(
+                'Ubicación: ${vm.latitud!.toStringAsFixed(5)}, '
+                '${vm.longitud!.toStringAsFixed(5)}',
+                style: const TextStyle(color: Colors.black54),
+              )
+            else
+              const Text(
+                'Sin ubicación cargada',
+                style: TextStyle(color: Colors.black54),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           _esEdicion ? 'Modificar lugar' : 'Nuevo lugar',
@@ -106,7 +195,7 @@ class _PantallaFormularioLugarFrecuenteState
       ),
       body: Container(
         color: Colors.white,
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -148,6 +237,8 @@ class _PantallaFormularioLugarFrecuenteState
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              _seccionUbicacion(),
               const SizedBox(height: 16),
               Text(
                 'Elegí un ícono:',
