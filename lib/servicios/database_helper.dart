@@ -22,6 +22,11 @@ class DatabaseHelper {
     return openDatabase(
       path,
       version: _version,
+      // Activa las claves foráneas en cada conexión (SQLite las trae apagadas).
+      // Sin esto, el ON DELETE CASCADE de alarmas no hace nada.
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onCreate: (db, version) async {
         // USUARIOS
         await db.execute(
