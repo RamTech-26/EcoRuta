@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../viewmodels/principal_viewmodel.dart';
 import 'pantalla_lista_lugares_frecuentes.dart';
 import 'pantalla_reporte_incidente.dart';
 import 'pantalla_puntos.dart';
 import 'pantalla_alarmas.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
 import 'pantalla_login.dart';
 
 class PantallaPrincipal extends StatefulWidget {
@@ -22,6 +25,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   void initState() {
     super.initState();
     viewModel = PrincipalViewModel();
+    viewModel.cargarLugares();
   }
 
   @override
@@ -33,9 +37,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   Widget _baldosa(IconData icono, String titulo, VoidCallback onTap) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -43,7 +45,11 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icono, size: 36, color: const Color(0xFF0F766E)), // <-- tu color
+              Icon(
+                icono,
+                size: 36,
+                color: const Color(0xFF0F766E),
+              ), // <-- tu color
               const SizedBox(height: 8),
               Text(
                 titulo,
@@ -58,6 +64,50 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           ),
         ),
       ),
+    );
+  }
+
+  /// Fila de chips con los lugares frecuentes para completar el destino.
+  Widget _chipsLugares() {
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) {
+        if (viewModel.lugares.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: SizedBox(
+            height: 40,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: viewModel.lugares.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 8),
+              itemBuilder: (context, i) {
+                final lugar = viewModel.lugares[i];
+                final elegido = viewModel.destinoSeleccionado?.id == lugar.id;
+                return ChoiceChip(
+                  avatar: Text(lugar.emoji),
+                  label: Text(lugar.nombre),
+                  labelStyle: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: elegido ? Colors.white : const Color(0xFF0F766E),
+                  ),
+                  selected: elegido,
+                  showCheckmark: false,
+                  selectedColor: const Color(0xFF0F766E),
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFF0F766E)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  onSelected: (_) => viewModel.seleccionarLugar(lugar),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -88,17 +138,26 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                   decoration: InputDecoration(
                     hintText: 'Origen',
                     hintStyle: const TextStyle(color: Colors.grey),
-                    prefixIcon: const Icon(Icons.my_location, color: Color(0xFF0F766E)),
+                    prefixIcon: const Icon(
+                      Icons.my_location,
+                      color: Color(0xFF0F766E),
+                    ),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Color(0xFF0F766E), width: 2.5),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF0F766E),
+                        width: 2.5,
+                      ),
                     ),
                   ),
                 ),
@@ -108,20 +167,30 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                   decoration: InputDecoration(
                     hintText: 'Destino',
                     hintStyle: const TextStyle(color: Colors.grey),
-                    prefixIcon: const Icon(Icons.location_on, color: Color(0xFF0F766E)),
+                    prefixIcon: const Icon(
+                      Icons.location_on,
+                      color: Color(0xFF0F766E),
+                    ),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Color(0xFF0F766E), width: 2.5),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF0F766E),
+                        width: 2.5,
+                      ),
                     ),
                   ),
                 ),
+                _chipsLugares(),
               ],
             ),
           ),
@@ -175,7 +244,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                 height: 6,
                                 margin: const EdgeInsets.only(top: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF0F766E), // <-- tu color
+                                  color: const Color(
+                                    0xFF0F766E,
+                                  ), // <-- tu color
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                               ),
@@ -198,18 +269,23 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => const PantallaReporteIncidente(),
+                                      builder: (_) =>
+                                          const PantallaReporteIncidente(),
                                     ),
                                   );
                                 },
                               ),
-                              _baldosa(Icons.home, 'Lugares Frecuentes', () {
-                                Navigator.push(
+                              _baldosa(Icons.home, 'Lugares Frecuentes', () async {
+                                await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const PantallaListaLugaresFrecuentes(),
+                                    builder: (_) =>
+                                        const PantallaListaLugaresFrecuentes(),
                                   ),
                                 );
+                                // Al volver, refrescamos los chips por si
+                                // se agregó, editó o borró algún lugar.
+                                viewModel.cargarLugares();
                               }),
                               _baldosa(Icons.alarm, 'Alarmas', () {
                                 Navigator.push(
@@ -241,7 +317,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                 if (!context.mounted) return;
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (_) => const PantallaLogin()),
+                                  MaterialPageRoute(
+                                    builder: (_) => const PantallaLogin(),
+                                  ),
                                 );
                               },
                               icon: const Icon(Icons.logout),
@@ -249,7 +327,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFC62828),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),

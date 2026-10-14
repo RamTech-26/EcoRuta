@@ -56,4 +56,27 @@ class LugarFrecuente {
       orden: orden ?? this.orden,
     );
   }
+
+  /// Emoji para mostrar. Los lugares viejos guardaban el nombre del ícono
+  /// de Material ('home', 'work', ...); los nuevos guardan el emoji directo.
+  String get emoji {
+    switch (icono) {
+      case 'home':
+        return '🏠';
+      case 'factory':
+        return '🏭';
+      case 'location_on':
+        return '📍';
+      case 'work':
+        return '💼';
+      case 'school':
+        return '🎓';
+      case 'local_gym':
+        return '🏋️';
+      case 'shopping_cart':
+        return '🛒';
+      default:
+        return icono;
+    }
+  }
 }
