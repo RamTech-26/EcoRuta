@@ -1,10 +1,11 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../modelos/incidente.dart';
 import '../viewmodels/incidente_viewmodel.dart';
-
-import 'dart:async';
 
 class PantallaListaIncidentes extends StatefulWidget {
   const PantallaListaIncidentes({super.key});
@@ -16,6 +17,8 @@ class PantallaListaIncidentes extends StatefulWidget {
 
 class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
   late final IncidenteViewModel viewModel;
+
+  static const Color _verde = Color(0xFF0F766E);
 
   @override
   void initState() {
@@ -32,16 +35,102 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
     super.dispose();
   }
 
-  void _verEstado(Incidente incidente) {
+  /// Muestra todos los datos del incidente: foto, tipos, calle,
+  /// descripción, fecha, ubicación GPS y estado.
+  void _verDetalle(Incidente incidente) {
+    final tieneFoto =
+        incidente.foto.isNotEmpty && File(incidente.foto).existsSync();
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Estado del reporte'),
-        content: const Text('Reporte en Tratamiento'),
+        title: Text(
+          incidente.tipos.join(', '),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Foto
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  height: 200,
+                  width: double.infinity,
+                  color: Colors.grey[200],
+                  child: tieneFoto
+                      ? Image.file(File(incidente.foto), fit: BoxFit.contain)
+                      : const Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.no_photography,
+                                  size: 40, color: Colors.grey),
+                              SizedBox(height: 4),
+                              Text('Sin foto',
+                                  style: TextStyle(color: Colors.grey)),
+                            ],
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              _filaDetalle(Icons.location_on, 'Calle', incidente.calle),
+              if (incidente.descripcion.isNotEmpty)
+                _filaDetalle(
+                    Icons.notes, 'Descripción', incidente.descripcion),
+              _filaDetalle(
+                  Icons.schedule, 'Fecha', _formatearFecha(incidente.fecha)),
+              _filaDetalle(
+                Icons.my_location,
+                'Ubicación GPS',
+                incidente.tieneUbicacion
+                    ? '${incidente.latitud!.toStringAsFixed(5)}, '
+                        '${incidente.longitud!.toStringAsFixed(5)}'
+                    : 'No registrada',
+              ),
+              _filaDetalle(Icons.info_outline, 'Estado', 'En tratamiento'),
+            ],
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(foregroundColor: _verde),
             child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Una fila del detalle: ícono, título en negrita y valor.
+  Widget _filaDetalle(IconData icono, String titulo, String valor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icono, size: 20, color: _verde),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titulo,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black54,
+                  ),
+                ),
+                Text(valor, style: GoogleFonts.poppins(color: Colors.black87)),
+              ],
+            ),
           ),
         ],
       ),
@@ -87,7 +176,7 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: const Color(0xFF0F766E),
+        backgroundColor: _verde,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -117,14 +206,16 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
                 final incidente = viewModel.incidentes[index];
                 return Card(
                   elevation: 3,
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ListTile(
+                    onTap: () => _verDetalle(incidente),
                     leading: const Icon(
                       Icons.warning_amber,
-                      color: Color(0xFF0F766E), // <-- tu color
+                      color: _verde,
                       size: 32,
                     ),
                     title: Text(
@@ -147,32 +238,46 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
                             '📝 ${incidente.descripcion}',
                             style: GoogleFonts.poppins(color: Colors.black54),
                           ),
-                        Text(
-                          '🕐 ${_formatearFecha(incidente.fecha)}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              '🕐 ${_formatearFecha(incidente.fecha)}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            if (incidente.foto.isNotEmpty) ...[
+                              const SizedBox(width: 8),
+                              const Icon(Icons.photo_camera,
+                                  size: 14, color: Colors.grey),
+                            ],
+                            if (incidente.tieneUbicacion) ...[
+                              const SizedBox(width: 6),
+                              const Icon(Icons.my_location,
+                                  size: 14, color: Colors.grey),
+                            ],
+                          ],
                         ),
                       ],
                     ),
                     trailing: PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert, color: Color(0xFF0F766E)),
+                      icon: const Icon(Icons.more_vert, color: _verde),
                       onSelected: (opcion) {
-                        if (opcion == 'estado') {
-                          _verEstado(incidente);
+                        if (opcion == 'detalle') {
+                          _verDetalle(incidente);
                         } else if (opcion == 'eliminar') {
                           _confirmarEliminar(incidente);
                         }
                       },
                       itemBuilder: (context) => const [
                         PopupMenuItem(
-                          value: 'estado',
+                          value: 'detalle',
                           child: Row(
                             children: [
                               Icon(Icons.info_outline),
                               SizedBox(width: 8),
-                              Text('Ver estado'),
+                              Text('Ver detalle'),
                             ],
                           ),
                         ),
