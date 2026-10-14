@@ -9,7 +9,7 @@ class DatabaseHelper {
 
   static Database? _database;
   static const _nombreDB = 'ecoruta.db';
-  static const _version = 5; // Incrementado para la migración de nuevas columnas[cite: 9]
+  static const _version = 6; // v6: latitud y longitud en incidentes
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -33,7 +33,7 @@ class DatabaseHelper {
         );
         // INCIDENTES[cite: 8, 9]
         await db.execute(
-          'CREATE TABLE IF NOT EXISTS incidentes(id TEXT PRIMARY KEY, tipos TEXT NOT NULL, descripcion TEXT NOT NULL, calle TEXT NOT NULL, fecha TEXT NOT NULL, foto TEXT NOT NULL)',
+          'CREATE TABLE IF NOT EXISTS incidentes(id TEXT PRIMARY KEY, tipos TEXT NOT NULL, descripcion TEXT NOT NULL, calle TEXT NOT NULL, fecha TEXT NOT NULL, foto TEXT NOT NULL, latitud REAL, longitud REAL)',
         );
         // ALARMAS[cite: 8, 9]
         await db.execute(
@@ -48,6 +48,11 @@ class DatabaseHelper {
           await db.execute('ALTER TABLE alarmas ADD COLUMN sonido TEXT NOT NULL DEFAULT "Marimba"');
           await db.execute('ALTER TABLE alarmas ADD COLUMN volumenPersonalizado INTEGER NOT NULL DEFAULT 0');
           await db.execute('ALTER TABLE alarmas ADD COLUMN volumen REAL NOT NULL DEFAULT 0.8');
+        }
+        if (oldVersion < 6) {
+          // Ubicación GPS del incidente (puede quedar vacía)
+          await db.execute('ALTER TABLE incidentes ADD COLUMN latitud REAL');
+          await db.execute('ALTER TABLE incidentes ADD COLUMN longitud REAL');
         }
       },
     );

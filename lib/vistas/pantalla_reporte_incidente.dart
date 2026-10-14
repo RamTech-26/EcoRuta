@@ -1,7 +1,8 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'dart:async';
 
 import '../viewmodels/incidente_viewmodel.dart';
 import 'pantalla_lista_incidentes.dart';
@@ -19,10 +20,14 @@ class _PantallaReporteIncidenteState extends State<PantallaReporteIncidente> {
   final TextEditingController controladorDescripcion = TextEditingController();
   final TextEditingController controladorCalle = TextEditingController();
 
+  static const Color _verde = Color(0xFF0F766E);
+
   @override
   void initState() {
     super.initState();
     viewModel = IncidenteViewModel();
+    // Toma la ubicación apenas se abre la pantalla
+    viewModel.obtenerUbicacion();
   }
 
   @override
@@ -31,6 +36,35 @@ class _PantallaReporteIncidenteState extends State<PantallaReporteIncidente> {
     controladorCalle.dispose();
     viewModel.dispose();
     super.dispose();
+  }
+
+  /// Muestra un menú para elegir entre cámara y galería.
+  Future<void> _elegirOrigenFoto() async {
+    final desdeGaleria = await showModalBottomSheet<bool>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera, color: _verde),
+              title: const Text('Sacar foto'),
+              onTap: () => Navigator.pop(context, false),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: _verde),
+              title: const Text('Elegir de la galería'),
+              onTap: () => Navigator.pop(context, true),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (desdeGaleria == null) return; // cerró el menú sin elegir
+    await viewModel.tomarFoto(desdeGaleria: desdeGaleria);
   }
 
   /// Abre el diálogo de confirmación. Si el usuario confirma, guarda el incidente.
@@ -63,6 +97,111 @@ class _PantallaReporteIncidenteState extends State<PantallaReporteIncidente> {
     }
   }
 
+  /// Recuadro de la foto: muestra la foto tomada o el botón para adjuntar.
+  Widget _areaFoto() {
+    if (viewModel.tieneFoto) {
+      return Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              height: 180,
+              width: double.infinity,
+              color: Colors.grey[200],
+              child: Image.file(File(viewModel.rutaFoto!), fit: BoxFit.contain),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: CircleAvatar(
+              backgroundColor: Colors.black54,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                tooltip: 'Quitar foto',
+                onPressed: viewModel.quitarFoto,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return InkWell(
+      onTap: _elegirOrigenFoto,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        height: 180,
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_a_photo, size: 50, color: _verde),
+              SizedBox(height: 8),
+              Text('Adjuntar foto', style: TextStyle(color: _verde)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Línea que indica el estado de la ubicación GPS.
+  Widget _estadoUbicacion() {
+    if (viewModel.obteniendoUbicacion) {
+      return const Row(
+        children: [
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2, color: _verde),
+          ),
+          SizedBox(width: 8),
+          Text('Obteniendo ubicación...'),
+        ],
+      );
+    }
+
+    if (viewModel.tieneUbicacion) {
+      return Row(
+        children: [
+          const Icon(Icons.my_location, size: 18, color: _verde),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Ubicación registrada '
+              '(${viewModel.latitud!.toStringAsFixed(5)}, '
+              '${viewModel.longitud!.toStringAsFixed(5)})',
+              style: const TextStyle(color: _verde),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        const Icon(Icons.location_off, size: 18, color: Colors.grey),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            viewModel.avisoUbicacion ?? 'Sin ubicación',
+            style: const TextStyle(color: Colors.grey),
+          ),
+        ),
+        TextButton(
+          onPressed: viewModel.obtenerUbicacion,
+          style: TextButton.styleFrom(foregroundColor: _verde),
+          child: const Text('Reintentar'),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,92 +214,87 @@ class _PantallaReporteIncidenteState extends State<PantallaReporteIncidente> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: const Color(0xFF0F766E),
+        backgroundColor: _verde,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Container(
-        color: Colors.white, // <-- FONDO BLANCO
+        color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Área de foto
-              Container(
-                height: 180,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200], // <-- gris claro para que se vea el área
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.add_a_photo, size: 50, color: Color(0xFF0F766E)),
-                      SizedBox(height: 8),
-                      Text(
-                        'Adjuntar foto',
-                        style: TextStyle(color: Color(0xFF0F766E)),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Botón ver reportes
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PantallaListaIncidentes(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.list_alt),
-                label: const Text('Ver reportes'),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF0F766E),
-                  side: const BorderSide(color: Color(0xFF0F766E)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Campo calle
-              TextField(
-                controller: controladorCalle,
-                decoration: InputDecoration(
-                  hintText: 'Calle o intersección',
-                  hintStyle: const TextStyle(color: Colors.grey),
-                  prefixIcon: const Icon(Icons.location_on, color: Color(0xFF0F766E)),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF0F766E), width: 2.5),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Lista de tipos de incidente
-              Expanded(
-                child: ListenableBuilder(
-                  listenable: viewModel,
-                  builder: (context, child) {
-                    return ListView(
+          child: ListenableBuilder(
+            listenable: viewModel,
+            builder: (context, child) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Todo el formulario se puede scrollear
+                  Expanded(
+                    child: ListView(
                       children: [
+                        // Área de foto
+                        _areaFoto(),
+                        const SizedBox(height: 12),
+
+                        // Botón ver reportes
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PantallaListaIncidentes(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.list_alt),
+                          label: const Text('Ver reportes'),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: _verde,
+                            side: const BorderSide(color: _verde),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Campo calle
+                        TextField(
+                          controller: controladorCalle,
+                          decoration: InputDecoration(
+                            hintText: 'Calle o intersección',
+                            hintStyle: const TextStyle(color: Colors.grey),
+                            prefixIcon: const Icon(
+                              Icons.location_on,
+                              color: _verde,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: _verde,
+                                width: 2.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Estado de la ubicación GPS
+                        _estadoUbicacion(),
+                        const SizedBox(height: 8),
+
+                        // Tipos de incidente
                         ...viewModel.tiposDisponibles.map(
                           (tipo) => CheckboxListTile(
                             title: Text(
@@ -168,10 +302,13 @@ class _PantallaReporteIncidenteState extends State<PantallaReporteIncidente> {
                               style: GoogleFonts.poppins(color: Colors.black87),
                             ),
                             value: viewModel.estaSeleccionado(tipo),
-                            activeColor: const Color(0xFF0F766E),
+                            activeColor: _verde,
                             checkColor: Colors.white,
                             onChanged: (seleccionado) {
-                              viewModel.alternarTipo(tipo, seleccionado ?? false);
+                              viewModel.alternarTipo(
+                                tipo,
+                                seleccionado ?? false,
+                              );
                             },
                           ),
                         ),
@@ -188,60 +325,68 @@ class _PantallaReporteIncidenteState extends State<PantallaReporteIncidente> {
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 filled: true,
                                 fillColor: Colors.white,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                   borderSide: BorderSide.none,
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(color: Color(0xFF0F766E), width: 2.5),
+                                  borderSide: const BorderSide(
+                                    color: _verde,
+                                    width: 2.5,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                       ],
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Botones
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC62828),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: const Text('Volver'),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _confirmarGuardado,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0F766E),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                  const SizedBox(height: 16),
+
+                  // Botones (quedan fijos abajo)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFC62828),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Text('Volver'),
                         ),
                       ),
-                      child: const Text('Confirmar'),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: viewModel.cargando
+                              ? null
+                              : _confirmarGuardado,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _verde,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Text('Confirmar'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
