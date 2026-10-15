@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import '../modelos/usuario.dart';
-import '../servicios/usuario_servicio.dart';
+import '../repositorios/auth_repositorio.dart';
 
 /// ViewModel de la pantalla de registro.
 /// Valida los campos, guarda el usuario en la base de datos
 /// y expone el estado de carga y los errores por campo.
 class RegistroViewModel extends ChangeNotifier {
-  final UsuarioServicio _servicio = UsuarioServicio();
+  final AuthRepositorio _repositorio;
+  RegistroViewModel({required this._repositorio});
 
   bool _cargando = false;
   bool _registrado = false;
@@ -151,15 +152,8 @@ class RegistroViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1) Crear el usuario en Firebase Auth (valida que el email no exista)
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email.trim(),
-        password: contrasena,
-      );
-
-      // 2) Si Firebase lo creó, guardamos los datos personales en SQLite local
       final nuevoUsuario = Usuario(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: '', // lo completa el repositorio con el uid de Firebase
         nombreApellido: nombreApellido.trim(),
         usuario: usuario.trim(),
         dni: dni.trim(),
@@ -170,21 +164,15 @@ class RegistroViewModel extends ChangeNotifier {
         departamento: departamento.trim(),
       );
 
-      await _servicio.guardar(nuevoUsuario);
+      await _repositorio.registrar(nuevoUsuario, contrasena);
       _registrado = true;
-
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use') {
-        _errorEmail = 'Ese email ya está registrado';
-      } else if (e.code == 'weak-password') {
-        _errorContrasena = 'La contraseña es muy débil';
-      } else if (e.code == 'invalid-email') {
-        _errorEmail = 'Email inválido';
+    } catch (e) {
+      final msg = e.toString();
+      if (msg.contains('ya está registrado')) {
+        _errorEmail = msg;
       } else {
-        _errorGeneral = 'Error al registrar el usuario';
+        _errorGeneral = msg;
       }
-    } catch (_) {
-      _errorGeneral = 'Error al registrar el usuario';
     } finally {
       _cargando = false;
       notifyListeners();

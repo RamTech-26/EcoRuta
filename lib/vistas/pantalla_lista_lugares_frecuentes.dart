@@ -3,6 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'dart:async';
 
+import '../repositorios/alarma_repositorio.dart';
+import '../servicios/alarma_servicio.dart';
+import '../servicios/database_helper.dart';
+import '../servicios/lugar_frecuente_servicio.dart';
 import '../viewmodels/lugar_frecuente_viewmodel.dart';
 import '../modelos/lugar_frecuente.dart';
 import 'pantalla_formulario_lugar_frecuente.dart';
@@ -21,7 +25,15 @@ class _PantallaListaLugaresFrecuentesState
   @override
   void initState() {
     super.initState();
-    viewModel = LugarFrecuenteViewModel();
+    final dbHelper = DatabaseHelper();
+    final lugarServicio = LugarFrecuenteServicio();
+    final alarmaRepositorio = AlarmaRepositorioImpl(dbHelper);
+    final alarmaServicio = AlarmaServicio();
+    viewModel = LugarFrecuenteViewModel(
+      lugarServicio: lugarServicio,
+      alarmaRepositorio: alarmaRepositorio,
+      alarmaServicio: alarmaServicio,
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       viewModel.cargarLugares();
     });
@@ -79,7 +91,7 @@ class _PantallaListaLugaresFrecuentesState
             viewModel.cargarLugares();
           }
         },
-        backgroundColor: const Color(0xFF0F766E), // <-- tu color
+        backgroundColor: const Color(0xFF0F766E),
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
@@ -105,13 +117,17 @@ class _PantallaListaLugaresFrecuentesState
 
             return ReorderableListView.builder(
               itemCount: viewModel.lugares.length,
-              onReorder: viewModel.reordenar,
+              onReorderItem: (oldIndex, newIndex) =>
+                  viewModel.reordenar(oldIndex, newIndex),
               itemBuilder: (context, index) {
                 final lugar = viewModel.lugares[index];
                 return Card(
                   key: ValueKey(lugar.id),
                   elevation: 3,
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -132,7 +148,10 @@ class _PantallaListaLugaresFrecuentesState
                       style: GoogleFonts.poppins(color: Colors.black54),
                     ),
                     trailing: PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert, color: Color(0xFF0F766E)),
+                      icon: const Icon(
+                        Icons.more_vert,
+                        color: Color(0xFF0F766E),
+                      ),
                       onSelected: (opcion) {
                         if (opcion == 'editar') {
                           _editarLugar(lugar);
@@ -157,7 +176,10 @@ class _PantallaListaLugaresFrecuentesState
                             children: [
                               Icon(Icons.delete, color: Colors.red),
                               SizedBox(width: 8),
-                              Text('Eliminar', style: TextStyle(color: Colors.red)),
+                              Text(
+                                'Eliminar',
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ],
                           ),
                         ),
@@ -199,7 +221,7 @@ class _PantallaListaLugaresFrecuentesState
       case 'school':
         return '🎓';
       case 'local_gym':
-        return '🏋️';
+        return '🏋';
       case 'shopping_cart':
         return '🛒';
       default:
@@ -249,8 +271,8 @@ class _DialogoEliminarLugarState extends State<_DialogoEliminarLugar> {
     final textoAlarmas = cantidad == 0
         ? ''
         : cantidad == 1
-            ? ' y su alarma'
-            : ' y sus $cantidad alarmas';
+        ? ' y su alarma'
+        : ' y sus $cantidad alarmas';
     return AlertDialog(
       title: const Text('Eliminar lugar'),
       content: Text(

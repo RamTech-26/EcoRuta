@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+
 import 'vistas/pantalla_login.dart';
 import 'vistas/pantalla_principal.dart';
+
 import 'package:alarm/alarm.dart';
+
 import 'servicios/alarma_servicio.dart'; // <- AGREGADO
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import 'repositorios/auth_repositorio.dart';
+import 'servicios/auth_servicio.dart';
+import 'servicios/usuario_servicio.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +22,19 @@ void main() async {
   await Alarm.init();
   AlarmaServicio.initListener(); // <- AGREGADO - FIX DEL STREAM
   await _precargarFuentes();
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<AuthRepositorio>(
+          create: (_) => AuthRepositorio(
+            authServicio: AuthServicio(),
+            usuarioServicio: UsuarioServicio(),
+          ),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 /// Precarga Poppins antes de mostrar la primera pantalla. Si no, algunos

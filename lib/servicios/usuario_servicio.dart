@@ -7,7 +7,7 @@ import '../modelos/usuario.dart';
 /// Maneja el alta, la búsqueda y la actualización de usuarios registrados.
 class UsuarioServicio {
   final DatabaseHelper _dbHelper = DatabaseHelper();
-  
+
   /// Guarda un usuario nuevo o actualiza uno existente.
   Future<void> guardar(Usuario usuario) async {
     final db = await _dbHelper.database;

@@ -48,10 +48,22 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
 
   final List<Map<String, dynamic>> _recompensas = const [
     {'nombre': 'Café gratis', 'costo': 100, 'icono': Icons.local_cafe},
-    {'nombre': 'Estacionamiento 1 hora', 'costo': 200, 'icono': Icons.local_parking},
-    {'nombre': 'Descuento 10% en supermercado', 'costo': 350, 'icono': Icons.local_grocery_store},
+    {
+      'nombre': 'Estacionamiento 1 hora',
+      'costo': 200,
+      'icono': Icons.local_parking,
+    },
+    {
+      'nombre': 'Descuento 10% en supermercado',
+      'costo': 350,
+      'icono': Icons.local_grocery_store,
+    },
     {'nombre': 'Entrada al cine', 'costo': 500, 'icono': Icons.movie},
-    {'nombre': 'Bicicleta municipal 1 día', 'costo': 700, 'icono': Icons.pedal_bike},
+    {
+      'nombre': 'Bicicleta municipal 1 día',
+      'costo': 700,
+      'icono': Icons.pedal_bike,
+    },
   ];
 
   int get _totalMesActual =>
@@ -69,8 +81,18 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
 
   String _nombreMesActual() {
     const meses = [
-      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto',
+      'septiembre',
+      'octubre',
+      'noviembre',
+      'diciembre',
     ];
     final hoy = DateTime.now();
     return '${meses[hoy.month - 1]} ${hoy.year}';
@@ -82,7 +104,7 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-          color: const Color(0xFF0F766E).withOpacity(0.15),
+          color: const Color(0xFF0F766E).withValues(alpha: 0.15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -123,7 +145,10 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
                     ),
                     subtitle: Text(
                       viaje['fecha'] as String,
-                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
                     ),
                     trailing: Text(
                       '+${viaje['puntos']} pts',
@@ -148,7 +173,7 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-          color: const Color(0xFF0F766E).withOpacity(0.15),
+          color: const Color(0xFF0F766E).withValues(alpha: 0.15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -179,19 +204,23 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
                 height: 80,
                 child: Card(
                   elevation: 3,
-                  color: esElMejor ? Colors.amber.withOpacity(0.3) : null,
+                  color: esElMejor ? Colors.amber.withValues(alpha: 0.3) : null,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ListTile(
                     leading: Icon(
                       esElMejor ? Icons.emoji_events : Icons.calendar_month,
-                      color: esElMejor ? Colors.amber[800] : const Color(0xFF0F766E),
+                      color: esElMejor
+                          ? Colors.amber[800]
+                          : const Color(0xFF0F766E),
                     ),
                     title: Text(
                       mes['mes'] as String,
                       style: GoogleFonts.poppins(
-                        fontWeight: esElMejor ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: esElMejor
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                     trailing: Text(
@@ -214,7 +243,7 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-          color: const Color(0xFF0F766E).withOpacity(0.15),
+          color: const Color(0xFF0F766E).withValues(alpha: 0.15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -244,7 +273,10 @@ class _PantallaPuntosState extends State<PantallaPuntos> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ListTile(
-                    leading: Icon(r['icono'] as IconData, color: const Color(0xFF0F766E)),
+                    leading: Icon(
+                      r['icono'] as IconData,
+                      color: const Color(0xFF0F766E),
+                    ),
                     title: Text(
                       r['nombre'] as String,
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w600),

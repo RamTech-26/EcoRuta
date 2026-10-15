@@ -58,11 +58,11 @@ Todos los recursos utilizados se mantienen dentro de sus capas gratuitas.
 
 El proyecto sigue el patrón MVVM:
 
-- **View:** pantallas y widgets de Flutter, sin lógica de negocio
-- **ViewModel:** maneja el estado y la lógica de presentación de cada pantalla
-- **Model:** agrupa dos fuentes de datos
-  - Servicios externos: Firebase Auth, Google Maps/Routes API
-  - Persistencia local: sqflite, shared_preferences
+- **View:** `vistas/` - pantallas y widgets de Flutter, sin lógica de negocio
+- **ViewModel:** `viewmodels/` - maneja el estado y la lógica de presentación de cada pantalla
+- **Model:** `modelos/` - clases de datos (Usuario, Incidente, Alarma, LugarFrecuente, PuntoRuta)
+- **Repositorio:** `repositorios/` - acceso a datos locales (sqflite)
+- **Servicio:** `servicios/` - conexión con Firebase Auth, Google Maps/Routes API y shared_preferences
 
 ## Modelo de datos
 
@@ -71,7 +71,8 @@ Entidades principales almacenadas localmente:
 - **Usuario:** caché mínima de datos de Firebase Auth (uid, email, nombre, método de autenticación)
 - **Incidente:** id, uid del usuario, tipo, foto, ubicación, fecha
 - **Alarma:** id, uid del usuario, nombre del lugar, ubicación, horario, estado
-- **Puntaje:** uid del usuario, puntos totales, última actividad
+- **LugarFrecuente:** id, uid del usuario, nombre del lugar, ubicación
+- **PuntoRuta:** id, uid del usuario, ubicación, orden, rutaId
 
 ## Estructura de carpetas (`lib/`)
 
@@ -79,18 +80,35 @@ Entidades principales almacenadas localmente:
 lib/
 ├── vistas/        # Pantallas (lo que el usuario ve)
 ├── viewmodels/    # Lógica de cada pantalla
-├── modelos/       # Clases de datos (Usuario, Incidente, Alarma, Puntaje)
-└── servicios/     # Conexión con Firebase, Google Maps/Routes y persistencia local
+├── modelos/       # Alarma, Incidente, LugarFrecuente, PuntoRuta, Usuario
+├── servicios/     # Conexión con Firebase, Google Maps/Routes y persistencia local
+└── repositorios/  # Acceso a datos locales (sqflite)
 ```
 
-## Convenciones de código
+## Convenciones
 
 - Variables y funciones: `camelCase`, en español (ej: `calcularPuntos()`)
 - Clases: `PascalCase` (ej: `PantallaMapa`)
 - Archivos: minúsculas separadas por guion bajo (ej: `pantalla_mapa.dart`)
-- Toda función no evidente debe tener un comentario breve explicando qué hace
+- Términos técnicos sin traducción natural en Flutter se mantienen en inglés: `viewmodel`, `login`, `widget`
 - Widgets que no cambian se marcan como `const`
-- Formato de código unificado con `dart format` antes de cada commit
+- Formato de código unificado con `dart format lib` antes de cada commit
+- Calidad: proyecto configurado con `analysis_options.yaml` que incluye `package:flutter_lints/flutter.yaml` y pasa `flutter analyze` sin errores ni warnings (`No issues found!`)
+
+**Estructura por pantalla:**
+Cada feature se compone de 4 piezas con el mismo nombre base:
+- `vistas/pantalla_[feature].dart` -> ej: `pantalla_alarmas.dart`
+- `viewmodels/[feature]_viewmodel.dart` -> ej: `alarma_viewmodel.dart`
+- `servicios/[feature]_servicio.dart` -> ej: `alarma_servicio.dart`
+- `repositorios/[feature]_repositorio.dart` -> ej: `alarma_repositorio.dart`
+
+**Verbos para acciones comunes:**
+- `cargar` para traer datos (ej: `cargarAlarmas()`)
+- `guardar` para crear o actualizar (ej: `guardarAlarma()`)
+- `eliminar` para borrar (ej: `eliminarAlarma()`)
+- `reordenar` para cambiar el orden (ej: `reordenarAlarmas()`)
+- `alternar` para estados on/off (ej: `alternarActivacion()`)
+- `obtener` para permisos/ubicación (ej: `obtenerUbicacionActual()`)
 
 ## Estrategia de ramas (Git)
 

@@ -65,10 +65,9 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
           hour: int.parse(partes[0]),
           minute: int.parse(partes[1]),
         );
-        _diasSeleccionados =
-            a.dias.isEmpty
-                ? []
-                : a.dias.split(', ').map((e) => e.trim()).toList();
+        _diasSeleccionados = a.dias.isEmpty
+            ? []
+            : a.dias.split(', ').map((e) => e.trim()).toList();
         _loopAudio = a.loopAudio;
         _vibrar = a.vibrar;
         _sonido = a.sonido;
@@ -94,9 +93,7 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
         _horaSeleccionada == null ||
         _diasSeleccionados.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Completá lugar, hora y al menos un día'),
-        ),
+        const SnackBar(content: Text('Completá lugar, hora y al menos un día')),
       );
       return;
     }
@@ -105,7 +102,9 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
     final minutoStr = _horaSeleccionada!.minute.toString().padLeft(2, '0');
 
     final alarmaActualizada = Alarma(
-      id: widget.alarmaEditar?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id:
+          widget.alarmaEditar?.id ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       lugarId: _lugarIdSeleccionado!,
       hora: '$horaStr:$minutoStr',
       dias: _diasSeleccionados.join(', '),
@@ -157,7 +156,10 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
                     child: InkWell(
                       onTap: _seleccionarHora,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 32,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey.shade200,
                           borderRadius: BorderRadius.circular(16),
@@ -183,14 +185,20 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
                       hintStyle: const TextStyle(color: Colors.grey),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: Color(0xFF0F766E), width: 2.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF0F766E),
+                          width: 2.5,
+                        ),
                       ),
                     ),
                     initialValue: _lugarIdSeleccionado,
@@ -216,7 +224,9 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
                       return InkWell(
                         onTap: () {
                           setState(() {
-                            sel ? _diasSeleccionados.remove(dia) : _diasSeleccionados.add(dia);
+                            sel
+                                ? _diasSeleccionados.remove(dia)
+                                : _diasSeleccionados.add(dia);
                           });
                         },
                         borderRadius: BorderRadius.circular(20),
@@ -226,7 +236,9 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
                           height: 38,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: sel ? const Color(0xFF0F766E) : Colors.grey.shade200,
+                            color: sel
+                                ? const Color(0xFF0F766E)
+                                : Colors.grey.shade200,
                           ),
                           alignment: Alignment.center,
                           child: Text(
@@ -245,13 +257,13 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
                   SwitchListTile(
                     title: Text('Repetición', style: GoogleFonts.poppins()),
                     value: _loopAudio,
-                    activeColor: const Color(0xFF0F766E),
+                    activeThumbColor: const Color(0xFF0F766E),
                     onChanged: (v) => setState(() => _loopAudio = v),
                   ),
                   SwitchListTile(
                     title: Text('Vibración', style: GoogleFonts.poppins()),
                     value: _vibrar,
-                    activeColor: const Color(0xFF0F766E),
+                    activeThumbColor: const Color(0xFF0F766E),
                     onChanged: (v) => setState(() => _vibrar = v),
                   ),
                   ListTile(
@@ -260,15 +272,23 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
                       value: _sonido,
                       underline: const SizedBox(),
                       items: ['Marimba', 'Nokia', 'Samsung']
-                          .map((s) => DropdownMenuItem(value: s, child: Text(s, style: GoogleFonts.poppins())))
+                          .map(
+                            (s) => DropdownMenuItem(
+                              value: s,
+                              child: Text(s, style: GoogleFonts.poppins()),
+                            ),
+                          )
                           .toList(),
                       onChanged: (v) => setState(() => _sonido = v!),
                     ),
                   ),
                   SwitchListTile(
-                    title: Text('Volumen personalizado', style: GoogleFonts.poppins()),
+                    title: Text(
+                      'Volumen personalizado',
+                      style: GoogleFonts.poppins(),
+                    ),
                     value: _volumenPersonalizado,
-                    activeColor: const Color(0xFF0F766E),
+                    activeThumbColor: const Color(0xFF0F766E),
                     onChanged: (v) => setState(() => _volumenPersonalizado = v),
                   ),
                   if (_volumenPersonalizado)

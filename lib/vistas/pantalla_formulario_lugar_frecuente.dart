@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../modelos/lugar_frecuente.dart';
+import '../repositorios/alarma_repositorio.dart';
+import '../servicios/alarma_servicio.dart';
+import '../servicios/database_helper.dart';
+import '../servicios/lugar_frecuente_servicio.dart';
 import '../viewmodels/lugar_frecuente_viewmodel.dart';
 
 const List<String> _emojisDisponibles = [
@@ -10,7 +14,7 @@ const List<String> _emojisDisponibles = [
   '📍',
   '💼',
   '🎓',
-  '🏋️',
+  '🏋',
   '🛒',
 ];
 
@@ -28,7 +32,7 @@ class _PantallaFormularioLugarFrecuenteState
     extends State<PantallaFormularioLugarFrecuente> {
   final _nombreCtrl = TextEditingController();
   final _direccionCtrl = TextEditingController();
-  final _viewModel = LugarFrecuenteViewModel();
+  late final LugarFrecuenteViewModel _viewModel;
   bool _guardando = false;
   String _iconoSeleccionado = '🏠';
 
@@ -37,6 +41,15 @@ class _PantallaFormularioLugarFrecuenteState
   @override
   void initState() {
     super.initState();
+    final dbHelper = DatabaseHelper();
+    final lugarServicio = LugarFrecuenteServicio();
+    final alarmaRepositorio = AlarmaRepositorioImpl(dbHelper);
+    final alarmaServicio = AlarmaServicio();
+    _viewModel = LugarFrecuenteViewModel(
+      lugarServicio: lugarServicio,
+      alarmaRepositorio: alarmaRepositorio,
+      alarmaServicio: alarmaServicio,
+    );
     if (_esEdicion) {
       _nombreCtrl.text = widget.lugar!.nombre;
       _direccionCtrl.text = widget.lugar!.direccion;
@@ -207,14 +220,20 @@ class _PantallaFormularioLugarFrecuenteState
                   hintStyle: const TextStyle(color: Colors.grey),
                   filled: true,
                   fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF0F766E), width: 2.5),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF0F766E),
+                      width: 2.5,
+                    ),
                   ),
                 ),
               ),
@@ -226,14 +245,20 @@ class _PantallaFormularioLugarFrecuenteState
                   hintStyle: const TextStyle(color: Colors.grey),
                   filled: true,
                   fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF0F766E), width: 2.5),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF0F766E),
+                      width: 2.5,
+                    ),
                   ),
                 ),
               ),
@@ -258,7 +283,7 @@ class _PantallaFormularioLugarFrecuenteState
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: seleccionado
-                            ? const Color(0xFF0F766E).withOpacity(0.2)
+                            ? const Color(0xFF0F766E).withValues(alpha: 0.2)
                             : Colors.grey[200],
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
@@ -318,7 +343,7 @@ class _PantallaFormularioLugarFrecuenteState
       case 'school':
         return '🎓';
       case 'local_gym':
-        return '🏋️';
+        return '🏋';
       case 'shopping_cart':
         return '🛒';
       default:

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../repositorios/auth_repositorio.dart';
+
+import 'package:provider/provider.dart';
+
 import '../viewmodels/registro_viewmodel.dart';
 
 class PantallaRegistro extends StatefulWidget {
@@ -13,22 +17,35 @@ class PantallaRegistro extends StatefulWidget {
 class _PantallaRegistroState extends State<PantallaRegistro> {
   late final RegistroViewModel viewModel;
 
-  final TextEditingController controladorNombreApellido = TextEditingController();
+  final TextEditingController controladorNombreApellido =
+      TextEditingController();
   final TextEditingController controladorUsuario = TextEditingController();
   final TextEditingController controladorDni = TextEditingController();
   final TextEditingController controladorEmail = TextEditingController();
   final TextEditingController controladorContrasena = TextEditingController();
-  final TextEditingController controladorRepetirContrasena = TextEditingController();
+  final TextEditingController controladorRepetirContrasena =
+      TextEditingController();
   final TextEditingController controladorPais = TextEditingController();
   final TextEditingController controladorCiudad = TextEditingController();
   final TextEditingController controladorDepartamento = TextEditingController();
   bool _ocultarContrasena = true;
   bool _ocultarRepetirContrasena = true;
+  bool _inicializado = false;
 
   @override
   void initState() {
     super.initState();
-    viewModel = RegistroViewModel();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_inicializado) {
+      viewModel = RegistroViewModel(
+        repositorio: context.read<AuthRepositorio>(),
+      );
+      _inicializado = true;
+    }
   }
 
   @override
@@ -42,7 +59,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
     controladorPais.dispose();
     controladorCiudad.dispose();
     controladorDepartamento.dispose();
-    viewModel.dispose();
+    if (_inicializado) viewModel.dispose();
     super.dispose();
   }
 
@@ -95,6 +112,9 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_inicializado) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return ListenableBuilder(
       listenable: viewModel,
       builder: (context, _) {
@@ -120,7 +140,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
               ),
             ),
             child: Container(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               child: SafeArea(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
@@ -144,14 +164,20 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                           hintStyle: const TextStyle(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2.5,
+                            ),
                           ),
                           errorText: viewModel.errorNombreApellido,
                         ),
@@ -166,14 +192,20 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                           hintStyle: const TextStyle(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2.5,
+                            ),
                           ),
                           errorText: viewModel.errorUsuario,
                         ),
@@ -189,14 +221,20 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                           hintStyle: const TextStyle(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2.5,
+                            ),
                           ),
                           errorText: viewModel.errorDni,
                         ),
@@ -212,14 +250,20 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                           hintStyle: const TextStyle(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2.5,
+                            ),
                           ),
                           errorText: viewModel.errorEmail,
                         ),
@@ -235,19 +279,27 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                           hintStyle: const TextStyle(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2.5,
+                            ),
                           ),
                           errorText: viewModel.errorContrasena,
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _ocultarContrasena ? Icons.visibility_off : Icons.visibility,
+                              _ocultarContrasena
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                             ),
                             onPressed: () {
                               setState(() {
@@ -268,23 +320,32 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                           hintStyle: const TextStyle(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2.5,
+                            ),
                           ),
                           errorText: viewModel.errorRepetirContrasena,
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _ocultarRepetirContrasena ? Icons.visibility_off : Icons.visibility,
+                              _ocultarRepetirContrasena
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                             ),
                             onPressed: () {
                               setState(() {
-                                _ocultarRepetirContrasena = !_ocultarRepetirContrasena;
+                                _ocultarRepetirContrasena =
+                                    !_ocultarRepetirContrasena;
                               });
                             },
                           ),
@@ -300,14 +361,20 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                           hintStyle: const TextStyle(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2.5,
+                            ),
                           ),
                           errorText: viewModel.errorPais,
                         ),
@@ -322,14 +389,20 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                           hintStyle: const TextStyle(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2.5,
+                            ),
                           ),
                           errorText: viewModel.errorCiudad,
                         ),
@@ -344,14 +417,20 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                           hintStyle: const TextStyle(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.green, width: 2.5),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2.5,
+                            ),
                           ),
                           errorText: viewModel.errorDepartamento,
                         ),
@@ -369,13 +448,17 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                         width: double.infinity,
                         height: 48,
                         child: ElevatedButton(
-                          onPressed: viewModel.cargando ? null : _confirmarRegistro,
+                          onPressed: viewModel.cargando
+                              ? null
+                              : _confirmarRegistro,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0F766E),
                             foregroundColor: Colors.white,
                           ),
                           child: viewModel.cargando
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
                               : const Text('REGISTRAR'),
                         ),
                       ),

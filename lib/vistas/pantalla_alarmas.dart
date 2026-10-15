@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../modelos/alarma.dart';
+import '../repositorios/alarma_repositorio.dart';
+import '../servicios/alarma_servicio.dart';
+import '../servicios/database_helper.dart';
 import '../viewmodels/alarma_viewmodel.dart';
 import 'pantalla_formulario_alarma.dart';
 
@@ -18,7 +21,13 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
   @override
   void initState() {
     super.initState();
-    viewModel = AlarmaViewModel();
+    final dbHelper = DatabaseHelper();
+    final alarmaRepositorio = AlarmaRepositorioImpl(dbHelper);
+    final alarmaServicio = AlarmaServicio();
+    viewModel = AlarmaViewModel(
+      alarmaRepositorio: alarmaRepositorio,
+      alarmaServicio: alarmaServicio,
+    );
     viewModel.cargarAlarmas();
   }
 
@@ -76,7 +85,8 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
 
             return ReorderableListView.builder(
               itemCount: viewModel.alarmas.length,
-              onReorder: viewModel.reordenar,
+              onReorderItem: (oldIndex, newIndex) =>
+                  viewModel.reordenar(oldIndex, newIndex),
               itemBuilder: (context, index) {
                 final alarma = viewModel.alarmas[index];
 
@@ -94,7 +104,10 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
                   },
                   child: Card(
                     elevation: 3,
-                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -110,12 +123,14 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
                         ),
                       ),
                       subtitle: Text(
-                        alarma.dias.isEmpty ? 'Sin días' : 'Días: ${alarma.dias}',
+                        alarma.dias.isEmpty
+                            ? 'Sin días'
+                            : 'Días: ${alarma.dias}',
                         style: GoogleFonts.poppins(color: Colors.black54),
                       ),
                       trailing: Switch(
                         value: alarma.activa,
-                        activeColor: const Color(0xFF0F766E),
+                        activeThumbColor: const Color(0xFF0F766E),
                         onChanged: (valor) {
                           viewModel.alternarActivacion(alarma, valor);
                         },

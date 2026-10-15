@@ -83,7 +83,13 @@ class Alarma {
   List<int> get diasEnEnteros {
     if (dias.isEmpty) return [];
     final mapaDias = {
-      'Lun': 1, 'Mar': 2, 'Mié': 3, 'Jue': 4, 'Vie': 5, 'Sáb': 6, 'Dom': 7
+      'Lun': 1,
+      'Mar': 2,
+      'Mié': 3,
+      'Jue': 4,
+      'Vie': 5,
+      'Sáb': 6,
+      'Dom': 7,
     };
     return dias
         .split(', ')
@@ -101,7 +107,13 @@ class Alarma {
     final diasSeleccionados = diasEnEnteros;
 
     if (diasSeleccionados.isEmpty) {
-      var fechaTentativa = DateTime(ahora.year, ahora.month, ahora.day, horaInt, minutoInt);
+      var fechaTentativa = DateTime(
+        ahora.year,
+        ahora.month,
+        ahora.day,
+        horaInt,
+        minutoInt,
+      );
       if (fechaTentativa.isBefore(ahora)) {
         fechaTentativa = fechaTentativa.add(const Duration(days: 1));
       }

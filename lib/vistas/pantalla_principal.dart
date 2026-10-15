@@ -14,6 +14,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'pantalla_login.dart';
+import '../repositorios/ubicacion_repositorio.dart';
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
@@ -38,7 +39,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   @override
   void initState() {
     super.initState();
-    viewModel = PrincipalViewModel();
+    viewModel = PrincipalViewModel(
+      ubicacionRepositorio: UbicacionRepositorioImpl(UbicacionServicio()),
+    );
     viewModel.cargarLugares();
     for (final campo in CampoRuta.values) {
       final foco = _foco[campo]!;
@@ -73,10 +76,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       isScrollControlled: true,
       showDragHandle: true,
       backgroundColor: Colors.white,
-      builder: (_) => _PanelOpcionesRuta(
-        campo: campo,
-        lugares: viewModel.lugares,
-      ),
+      builder: (_) =>
+          _PanelOpcionesRuta(campo: campo, lugares: viewModel.lugares),
     );
     if (!mounted || eleccion == null) return;
 
@@ -117,7 +118,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       case EstadoUbicacion.servicioApagado:
         final abrir = await _preguntar(
           titulo: 'Ubicación desactivada',
-          texto: 'Para usar tu ubicación actual, activá la ubicación '
+          texto:
+              'Para usar tu ubicación actual, activá la ubicación '
               'del celular y después volvé a elegir "Mi ubicación actual".',
           boton: 'Activar',
         );
@@ -125,14 +127,17 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       case EstadoUbicacion.sinPermisoPermanente:
         final abrir = await _preguntar(
           titulo: 'Permiso de ubicación',
-          texto: 'EcoRuta no tiene permiso para usar tu ubicación. '
+          texto:
+              'EcoRuta no tiene permiso para usar tu ubicación. '
               'Podés habilitarlo en los ajustes de la app.',
           boton: 'Abrir ajustes',
         );
         if (abrir) await viewModel.abrirAjustesApp();
       case EstadoUbicacion.sinPermiso:
-        _avisar('Sin permiso de ubicación. Podés elegir un lugar '
-            'o escribir la dirección.');
+        _avisar(
+          'Sin permiso de ubicación. Podés elegir un lugar '
+          'o escribir la dirección.',
+        );
       case EstadoUbicacion.error:
         _avisar('No se pudo obtener la ubicación. Probá de nuevo.');
     }
@@ -221,7 +226,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         suffixIcon: sufijo,
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
@@ -301,7 +309,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  onSelected: (_) => viewModel.elegirLugar(CampoRuta.destino, lugar),
+                  onSelected: (_) =>
+                      viewModel.elegirLugar(CampoRuta.destino, lugar),
                 );
               },
             ),
@@ -516,8 +525,9 @@ class _PanelOpcionesRuta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const verde = Color(0xFF0F766E);
-    final titulo =
-        campo == CampoRuta.origen ? '¿Desde dónde salís?' : '¿A dónde vas?';
+    final titulo = campo == CampoRuta.origen
+        ? '¿Desde dónde salís?'
+        : '¿A dónde vas?';
 
     return SafeArea(
       child: ConstrainedBox(
@@ -557,10 +567,12 @@ class _PanelOpcionesRuta extends StatelessWidget {
                 ),
               ),
               ...lugares.map((lugar) {
-                final sinUbicacion =
-                    lugar.latitud == 0 && lugar.longitud == 0;
+                final sinUbicacion = lugar.latitud == 0 && lugar.longitud == 0;
                 return ListTile(
-                  leading: Text(lugar.emoji, style: const TextStyle(fontSize: 24)),
+                  leading: Text(
+                    lugar.emoji,
+                    style: const TextStyle(fontSize: 24),
+                  ),
                   title: Text(lugar.nombre),
                   subtitle: Text(
                     sinUbicacion

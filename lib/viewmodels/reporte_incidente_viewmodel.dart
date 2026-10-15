@@ -1,9 +1,9 @@
-
 import 'package:flutter/widgets.dart';
 
 class ReporteIncidenteViewModel extends ChangeNotifier {
   final List<String> _incidentesSeleccionados = [];
-  List<String> get incidentesSeleccionados => List.unmodifiable(_incidentesSeleccionados);
+  List<String> get incidentesSeleccionados =>
+      List.unmodifiable(_incidentesSeleccionados);
 
   final TextEditingController controladorDescripcion = TextEditingController();
 

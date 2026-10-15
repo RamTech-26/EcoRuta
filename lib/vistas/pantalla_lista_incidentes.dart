@@ -66,11 +66,16 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.no_photography,
-                                  size: 40, color: Colors.grey),
+                              Icon(
+                                Icons.no_photography,
+                                size: 40,
+                                color: Colors.grey,
+                              ),
                               SizedBox(height: 4),
-                              Text('Sin foto',
-                                  style: TextStyle(color: Colors.grey)),
+                              Text(
+                                'Sin foto',
+                                style: TextStyle(color: Colors.grey),
+                              ),
                             ],
                           ),
                         ),
@@ -80,16 +85,18 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
 
               _filaDetalle(Icons.location_on, 'Calle', incidente.calle),
               if (incidente.descripcion.isNotEmpty)
-                _filaDetalle(
-                    Icons.notes, 'Descripción', incidente.descripcion),
+                _filaDetalle(Icons.notes, 'Descripción', incidente.descripcion),
               _filaDetalle(
-                  Icons.schedule, 'Fecha', _formatearFecha(incidente.fecha)),
+                Icons.schedule,
+                'Fecha',
+                _formatearFecha(incidente.fecha),
+              ),
               _filaDetalle(
                 Icons.my_location,
                 'Ubicación GPS',
                 incidente.tieneUbicacion
                     ? '${incidente.latitud!.toStringAsFixed(5)}, '
-                        '${incidente.longitud!.toStringAsFixed(5)}'
+                          '${incidente.longitud!.toStringAsFixed(5)}'
                     : 'No registrada',
               ),
               _filaDetalle(Icons.info_outline, 'Estado', 'En tratamiento'),
@@ -206,8 +213,10 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
                 final incidente = viewModel.incidentes[index];
                 return Card(
                   elevation: 3,
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -249,13 +258,19 @@ class _PantallaListaIncidentesState extends State<PantallaListaIncidentes> {
                             ),
                             if (incidente.foto.isNotEmpty) ...[
                               const SizedBox(width: 8),
-                              const Icon(Icons.photo_camera,
-                                  size: 14, color: Colors.grey),
+                              const Icon(
+                                Icons.photo_camera,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
                             ],
                             if (incidente.tieneUbicacion) ...[
                               const SizedBox(width: 6),
-                              const Icon(Icons.my_location,
-                                  size: 14, color: Colors.grey),
+                              const Icon(
+                                Icons.my_location,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
                             ],
                           ],
                         ),

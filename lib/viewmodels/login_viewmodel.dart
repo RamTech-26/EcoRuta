@@ -1,9 +1,10 @@
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../repositorios/auth_repositorio.dart';
+
 class LoginViewModel extends ChangeNotifier {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final AuthRepositorio _repositorio;
+  LoginViewModel({required this._repositorio});
 
   bool _logueado = false;
   bool _cargando = false;
@@ -31,55 +32,25 @@ class LoginViewModel extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await _auth.signInWithEmailAndPassword(
-        email: email.trim(),
-        password: pass.trim(),
-      );
+      await _repositorio.iniciarSesion(email, pass);
       _logueado = true;
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        _error = 'No existe una cuenta con ese email';
-      } else if (e.code == 'wrong-password') {
-        _error = 'Contraseña incorrecta';
-      } else {
-        _error = 'Error al iniciar sesión';
-      }
-    } catch (_) {
-      _error = 'Error al iniciar sesión';
+    } catch (e) {
+      _error = e.toString();
     } finally {
       _cargando = false;
       notifyListeners();
     }
   }
 
-
   Future<void> loginConGoogle() async {
     _cargando = true;
     _error = null;
     notifyListeners();
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        // El usuario canceló el login
-        _cargando = false;
-        notifyListeners();
-        return;
-      }
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      await _repositorio.iniciarConGoogle();
       _logueado = true;
-    } on FirebaseAuthException catch (e) {
-      _error = 'Error al iniciar sesión con Google';
-    } catch (_) {
-      _error = 'Error al iniciar sesión con Google';
+    } catch (e) {
+      _error = e.toString();
     } finally {
       _cargando = false;
       notifyListeners();

@@ -66,12 +66,12 @@ class PuntoRuta {
     required double latitud,
     required double longitud,
     String? texto,
-  }) =>
-      PuntoRuta(
-        texto: texto ??
-            '${latitud.toStringAsFixed(5)}, ${longitud.toStringAsFixed(5)}',
-        tipo: TipoPunto.mapa,
-        latitud: latitud,
-        longitud: longitud,
-      );
+  }) => PuntoRuta(
+    texto:
+        texto ??
+        '${latitud.toStringAsFixed(5)}, ${longitud.toStringAsFixed(5)}',
+    tipo: TipoPunto.mapa,
+    latitud: latitud,
+    longitud: longitud,
+  );
 }

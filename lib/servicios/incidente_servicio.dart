@@ -1,12 +1,13 @@
 import 'package:ecoruta_2026/servicios/database_helper.dart';
 import 'package:sqflite/sqflite.dart';
+
 import '../modelos/incidente.dart';
 
 /// Servicio de persistencia de incidentes reportados.
 /// Guarda, lista y elimina incidentes en SQLite.
 class IncidenteServicio {
   final DatabaseHelper _dbHelper = DatabaseHelper();
-  
+
   /// Guarda un incidente nuevo.
   Future<void> guardar(Incidente incidente) async {
     final db = await _dbHelper.database;

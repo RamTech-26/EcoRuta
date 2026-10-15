@@ -48,11 +48,21 @@ class DatabaseHelper {
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 5) {
           // Migración automática si la tabla ya existía[cite: 28]
-          await db.execute('ALTER TABLE alarmas ADD COLUMN loopAudio INTEGER NOT NULL DEFAULT 1');
-          await db.execute('ALTER TABLE alarmas ADD COLUMN vibrar INTEGER NOT NULL DEFAULT 1');
-          await db.execute('ALTER TABLE alarmas ADD COLUMN sonido TEXT NOT NULL DEFAULT "Marimba"');
-          await db.execute('ALTER TABLE alarmas ADD COLUMN volumenPersonalizado INTEGER NOT NULL DEFAULT 0');
-          await db.execute('ALTER TABLE alarmas ADD COLUMN volumen REAL NOT NULL DEFAULT 0.8');
+          await db.execute(
+            'ALTER TABLE alarmas ADD COLUMN loopAudio INTEGER NOT NULL DEFAULT 1',
+          );
+          await db.execute(
+            'ALTER TABLE alarmas ADD COLUMN vibrar INTEGER NOT NULL DEFAULT 1',
+          );
+          await db.execute(
+            'ALTER TABLE alarmas ADD COLUMN sonido TEXT NOT NULL DEFAULT "Marimba"',
+          );
+          await db.execute(
+            'ALTER TABLE alarmas ADD COLUMN volumenPersonalizado INTEGER NOT NULL DEFAULT 0',
+          );
+          await db.execute(
+            'ALTER TABLE alarmas ADD COLUMN volumen REAL NOT NULL DEFAULT 0.8',
+          );
         }
         if (oldVersion < 6) {
           // Ubicación GPS del incidente (puede quedar vacía)
