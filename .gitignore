@@ -124,3 +124,7 @@ app.*.symbols
 **/ios/Runner/GoogleService-Info.plist
 # Widget Preview related
 .widget_preview/
+
+# Texts
+Codigo_Limpio.txt
+analisis.txt
