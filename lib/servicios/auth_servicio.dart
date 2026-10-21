@@ -17,11 +17,12 @@ class AuthServicio {
     );
   }
 
-  Future<UserCredential> loginConGoogle() async {
+  /// Abre el selector de cuentas de Google e inicia sesión en Firebase.
+  ///
+  /// Devuelve `null` si el usuario cerró el selector sin elegir cuenta.
+  Future<UserCredential?> loginConGoogle() async {
     final googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) {
-      throw Exception('Login cancelado por el usuario');
-    }
+    if (googleUser == null) return null;
     final googleAuth = await googleUser.authentication;
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
