@@ -126,20 +126,23 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
           });
         }
 
-        return Scaffold(
-          resizeToAvoidBottomInset: false,
-          body: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/fondo.png'),
-                fit: BoxFit.cover,
-              ),
+        // El fondo va afuera del Scaffold: así, cuando aparece el teclado,
+        // se achica solo el formulario (y Flutter sube el campo que se está
+        // escribiendo), pero la imagen no salta.
+        return Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/fondo.png'),
+              fit: BoxFit.cover,
             ),
-            child: Container(
-              color: Colors.black.withValues(alpha: 0.4),
-              child: SafeArea(
+          ),
+          child: Container(
+            color: Colors.black.withValues(alpha: 0.4),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: SafeArea(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Column(
