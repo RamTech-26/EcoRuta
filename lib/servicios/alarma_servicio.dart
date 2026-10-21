@@ -45,6 +45,10 @@ class AlarmaServicio {
     return int.tryParse(digitsOnly) ?? (id.hashCode & 0x7fffffff);
   }
 
+  /// Si [settings] es la alarma nativa que corresponde a [alarma].
+  bool esLaMisma(Alarma alarma, AlarmSettings settings) =>
+      _safeIntId(alarma.id) == settings.id;
+
   /// Revisa los permisos de alarmas exactas y notificaciones sin pedirlos.
   Future<EstadoPermisoAlarma> revisarPermisos() async {
     final alarmas = await Permission.scheduleExactAlarm.status;

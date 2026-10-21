@@ -39,18 +39,22 @@ class AlarmaViewModel extends ChangeNotifier {
     }
   }
 
-  /// Cuando suena una alarma, vuelve a programar las activas para su
-  /// próxima fecha.
+  /// Cuando suena una alarma, vuelve a programar las otras activas.
+  ///
+  /// La que está sonando no se toca: volver a programarla con el mismo id
+  /// la corta antes de que se escuche, porque empieza con volumen bajo.
   void _escucharEventosDeAlarma() {
     _ringSub?.cancel();
     // Escuchamos el broadcast del servicio, NO el stream directo del plugin.
-    _ringSub = AlarmaServicio.onRing.listen((alarmSettings) async {
+    _ringSub = AlarmaServicio.onRing.listen((sonando) async {
       final alarmasGuardadas = await _alarmaRepositorio.obtenerTodas();
-      for (var a in alarmasGuardadas) {
-        if (a.activa) {
-          await _alarmaServicio.programarAlarmaNativa(a);
+      for (final alarma in alarmasGuardadas) {
+        if (alarma.activa && !_alarmaServicio.esLaMisma(alarma, sonando)) {
+          await _alarmaServicio.programarAlarmaNativa(alarma);
         }
       }
+      // TODO(grupo): cuando se detenga, reprogramar la que sonó para su
+      // próximo día; hoy los días de repetición no se reprograman solos.
       _alarmas = alarmasGuardadas;
       notifyListeners();
     });
