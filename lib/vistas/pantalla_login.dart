@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; // <-- NUEVO
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../repositorios/auth_repositorio.dart';
@@ -81,11 +81,10 @@ class _PantallaLoginState extends State<PantallaLogin> {
                     padding: const EdgeInsets.all(24),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
-                        minHeight: MediaQuery.of(context).size.height - 48,
+                        minHeight: MediaQuery.sizeOf(context).height - 48,
                       ),
                       child: Column(
-                        mainAxisAlignment:
-                            MainAxisAlignment.center, // <-- CENTRADO VERTICAL
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const SizedBox(height: 50),
                           if (viewModel.error != null)
