@@ -18,6 +18,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
   final TextEditingController controladorUsuario = TextEditingController();
   final TextEditingController controladorContrasena = TextEditingController();
   bool _inicializado = false;
+  bool _navegando = false;
 
   @override
   void initState() {
@@ -29,12 +30,27 @@ class _PantallaLoginState extends State<PantallaLogin> {
     super.didChangeDependencies();
     if (!_inicializado) {
       viewModel = LoginViewModel(repositorio: context.read<AuthRepositorio>());
+      viewModel.addListener(_alCambiarEstado);
       _inicializado = true;
     }
   }
 
+  /// Abre la pantalla principal una sola vez cuando el login sale bien.
+  ///
+  /// No va en el `build`: el `build` se ejecuta muchas veces (por ejemplo,
+  /// mientras se cierra el teclado) y abría varias copias de la pantalla.
+  void _alCambiarEstado() {
+    if (!viewModel.logueado || _navegando || !mounted) return;
+    _navegando = true;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const PantallaPrincipal()),
+    );
+  }
+
   @override
   void dispose() {
+    if (_inicializado) viewModel.removeListener(_alCambiarEstado);
     controladorUsuario.dispose();
     controladorContrasena.dispose();
     viewModel.dispose();
@@ -46,15 +62,6 @@ class _PantallaLoginState extends State<PantallaLogin> {
     return ListenableBuilder(
       listenable: viewModel,
       builder: (context, _) {
-        if (viewModel.logueado) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const PantallaPrincipal()),
-            );
-          });
-        }
         return Scaffold(
           resizeToAvoidBottomInset: false,
           body: Container(
