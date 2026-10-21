@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; // <-- NUEVO
+import 'package:provider/provider.dart';
 
+import '../repositorios/auth_repositorio.dart';
 import '../viewmodels/login_viewmodel.dart';
 import 'pantalla_principal.dart';
 import 'pantalla_registro.dart';
-import '../repositorios/auth_repositorio.dart';
-
-import 'package:provider/provider.dart';
 
 class PantallaLogin extends StatefulWidget {
   const PantallaLogin({super.key});
@@ -170,18 +169,16 @@ class _PantallaLoginState extends State<PantallaLogin> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          Row(
+                          const Row(
                             children: [
-                              const Expanded(
+                              Expanded(
                                 child: Divider(
                                   color: Colors.white54,
                                   thickness: 1,
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
+                                padding: EdgeInsets.symmetric(horizontal: 12),
                                 child: Text(
                                   'o',
                                   style: TextStyle(
@@ -191,7 +188,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
                                   ),
                                 ),
                               ),
-                              const Expanded(
+                              Expanded(
                                 child: Divider(
                                   color: Colors.white54,
                                   thickness: 1,

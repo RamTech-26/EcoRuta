@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import '../repositorios/auth_repositorio.dart';
-
 import 'package:provider/provider.dart';
 
+import '../repositorios/auth_repositorio.dart';
 import '../viewmodels/registro_viewmodel.dart';
 
 class PantallaRegistro extends StatefulWidget {

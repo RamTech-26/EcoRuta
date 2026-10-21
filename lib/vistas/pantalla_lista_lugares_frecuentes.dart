@@ -1,14 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'dart:async';
-
+import '../modelos/lugar_frecuente.dart';
 import '../repositorios/alarma_repositorio.dart';
 import '../servicios/alarma_servicio.dart';
 import '../servicios/database_helper.dart';
 import '../servicios/lugar_frecuente_servicio.dart';
 import '../viewmodels/lugar_frecuente_viewmodel.dart';
-import '../modelos/lugar_frecuente.dart';
 import 'pantalla_formulario_lugar_frecuente.dart';
 
 class PantallaListaLugaresFrecuentes extends StatefulWidget {

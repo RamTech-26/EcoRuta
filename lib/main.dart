@@ -1,20 +1,16 @@
-import 'package:flutter/material.dart';
-
-import 'vistas/pantalla_login.dart';
-import 'vistas/pantalla_principal.dart';
-
 import 'package:alarm/alarm.dart';
-
-import 'servicios/alarma_servicio.dart'; // <- AGREGADO
-
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'repositorios/auth_repositorio.dart';
+import 'servicios/alarma_servicio.dart'; // <- AGREGADO
 import 'servicios/auth_servicio.dart';
 import 'servicios/usuario_servicio.dart';
+import 'vistas/pantalla_login.dart';
+import 'vistas/pantalla_principal.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

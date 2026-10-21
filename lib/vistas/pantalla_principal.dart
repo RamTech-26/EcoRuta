@@ -1,20 +1,18 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../modelos/lugar_frecuente.dart';
 import '../modelos/punto_ruta.dart';
+import '../repositorios/ubicacion_repositorio.dart';
 import '../servicios/ubicacion_servicio.dart';
 import '../viewmodels/principal_viewmodel.dart';
-import 'pantalla_lista_lugares_frecuentes.dart';
-import 'pantalla_reporte_incidente.dart';
-import 'pantalla_puntos.dart';
 import 'pantalla_alarmas.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-
+import 'pantalla_lista_lugares_frecuentes.dart';
 import 'pantalla_login.dart';
-import '../repositorios/ubicacion_repositorio.dart';
+import 'pantalla_puntos.dart';
+import 'pantalla_reporte_incidente.dart';
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
