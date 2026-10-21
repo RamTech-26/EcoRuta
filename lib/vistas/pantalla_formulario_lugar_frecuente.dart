@@ -275,6 +275,7 @@ class _PantallaFormularioLugarFrecuenteState
               const SizedBox(height: 8),
               Wrap(
                 spacing: 12,
+                runSpacing: 12,
                 children: _emojisDisponibles.map((emoji) {
                   final seleccionado = _iconoSeleccionado == emoji;
                   return GestureDetector(
