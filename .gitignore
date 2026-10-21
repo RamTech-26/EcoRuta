@@ -1,6 +1,8 @@
 # Miscellaneous
 *.class
 *.lock
+# pubspec.lock se versiona: en una app todo el equipo compila con las mismas versiones
+!pubspec.lock
 *.log
 *.pyc
 *.swp
