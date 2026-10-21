@@ -78,7 +78,15 @@ class _PantallaLoginState extends State<PantallaLogin> {
               child: Stack(
                 children: [
                   SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
+                    // Abajo se suma el alto del teclado: el fondo no se achica
+                    // (resizeToAvoidBottomInset: false), pero así se puede
+                    // bajar hasta el último campo con el teclado abierto.
+                    padding: EdgeInsets.fromLTRB(
+                      24,
+                      24,
+                      24,
+                      24 + MediaQuery.viewInsetsOf(context).bottom,
+                    ),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: MediaQuery.sizeOf(context).height - 48,
