@@ -53,7 +53,6 @@ class AuthRepositorio {
           usuario: user.email?.split('@').first ?? user.uid,
           dni: '',
           email: user.email ?? '',
-          contrasena: '',
           pais: '',
           ciudad: '',
           departamento: '',

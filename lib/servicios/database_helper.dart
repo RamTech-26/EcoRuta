@@ -9,7 +9,14 @@ class DatabaseHelper {
 
   static Database? _database;
   static const _nombreDB = 'ecoruta.db';
-  static const _version = 6; // v6: latitud y longitud en incidentes
+  static const _version = 7; // v7: usuarios sin contraseña
+
+  /// Columnas de la tabla de usuarios. Se usan al crear la base y en la
+  /// migración a v7, así las dos quedan siempre iguales.
+  static const _columnasUsuarios =
+      'id TEXT PRIMARY KEY, nombreApellido TEXT NOT NULL, '
+      'usuario TEXT NOT NULL UNIQUE, dni TEXT NOT NULL, email TEXT NOT NULL, '
+      'pais TEXT NOT NULL, ciudad TEXT NOT NULL, departamento TEXT NOT NULL';
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -30,7 +37,7 @@ class DatabaseHelper {
       onCreate: (db, version) async {
         // USUARIOS
         await db.execute(
-          'CREATE TABLE IF NOT EXISTS usuarios(id TEXT PRIMARY KEY, nombreApellido TEXT NOT NULL, usuario TEXT NOT NULL UNIQUE, dni TEXT NOT NULL, email TEXT NOT NULL, contrasena TEXT NOT NULL, pais TEXT NOT NULL, ciudad TEXT NOT NULL, departamento TEXT NOT NULL)',
+          'CREATE TABLE IF NOT EXISTS usuarios($_columnasUsuarios)',
         );
         // LUGARES FRECUENTES[cite: 8, 9]
         await db.execute(
@@ -68,6 +75,20 @@ class DatabaseHelper {
           // Ubicación GPS del incidente (puede quedar vacía)
           await db.execute('ALTER TABLE incidentes ADD COLUMN latitud REAL');
           await db.execute('ALTER TABLE incidentes ADD COLUMN longitud REAL');
+        }
+        if (oldVersion < 7) {
+          // La contraseña la verifica Firebase: no tiene que quedar guardada
+          // en el celular. SQLite en Android viejo no tiene DROP COLUMN, así
+          // que se recrea la tabla sin esa columna y se copian los datos.
+          await db.execute('CREATE TABLE usuarios_nueva($_columnasUsuarios)');
+          await db.execute(
+            'INSERT INTO usuarios_nueva '
+            '(id, nombreApellido, usuario, dni, email, pais, ciudad, departamento) '
+            'SELECT id, nombreApellido, usuario, dni, email, pais, ciudad, departamento '
+            'FROM usuarios',
+          );
+          await db.execute('DROP TABLE usuarios');
+          await db.execute('ALTER TABLE usuarios_nueva RENAME TO usuarios');
         }
       },
     );

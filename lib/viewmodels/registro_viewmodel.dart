@@ -159,7 +159,6 @@ class RegistroViewModel extends ChangeNotifier {
         usuario: usuario.trim(),
         dni: dni.trim(),
         email: email.trim(),
-        contrasena: contrasena,
         pais: pais.trim(),
         ciudad: ciudad.trim(),
         departamento: departamento.trim(),
