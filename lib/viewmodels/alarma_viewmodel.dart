@@ -39,8 +39,11 @@ class AlarmaViewModel extends ChangeNotifier {
     }
   }
 
+  /// Cuando suena una alarma, vuelve a programar las activas para su
+  /// próxima fecha.
   void _escucharEventosDeAlarma() {
     _ringSub?.cancel();
+    // Escuchamos el broadcast del servicio, NO el stream directo del plugin.
     _ringSub = AlarmaServicio.onRing.listen((alarmSettings) async {
       final alarmasGuardadas = await _alarmaRepositorio.obtenerTodas();
       for (var a in alarmasGuardadas) {

@@ -29,6 +29,7 @@ class LugarFrecuenteViewModel extends ChangeNotifier {
   bool get obteniendoUbicacion => _obteniendoUbicacion;
   String? get avisoUbicacion => _avisoUbicacion;
 
+  /// Un lugar viejo guardado con 0,0 cuenta como "sin ubicación".
   bool get tieneUbicacion =>
       _latitud != null &&
       _longitud != null &&
@@ -40,6 +41,7 @@ class LugarFrecuenteViewModel extends ChangeNotifier {
     required this._alarmaServicio,
   });
 
+  /// Al editar, carga las coordenadas que ya tenía el lugar.
   void cargarUbicacion(double latitud, double longitud) {
     _latitud = latitud;
     _longitud = longitud;
@@ -101,6 +103,7 @@ class LugarFrecuenteViewModel extends ChangeNotifier {
     await cargarLugares();
   }
 
+  /// Cuántas alarmas tiene un lugar (para avisar antes de eliminarlo).
   Future<int> contarAlarmas(String lugarId) async {
     try {
       final alarmas = await _alarmaRepositorio.obtenerPorLugar(lugarId);
@@ -115,6 +118,8 @@ class LugarFrecuenteViewModel extends ChangeNotifier {
     _lugares.removeWhere((l) => l.id == id);
     notifyListeners();
     try {
+      // El ON DELETE CASCADE solo borra las filas de la base:
+      // las alarmas programadas en el sistema hay que cancelarlas a mano.
       final alarmas = await _alarmaRepositorio.obtenerPorLugar(id);
       for (final alarma in alarmas) {
         await _alarmaServicio.cancelarAlarmaNativa(alarma.id);
