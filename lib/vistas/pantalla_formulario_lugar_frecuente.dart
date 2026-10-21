@@ -14,7 +14,7 @@ const List<String> _emojisDisponibles = [
   '📍',
   '💼',
   '🎓',
-  '🏋',
+  '\u{1F3CB}\u{FE0F}', // 🏋️
   '🛒',
 ];
 
@@ -53,7 +53,7 @@ class _PantallaFormularioLugarFrecuenteState
     if (_esEdicion) {
       _nombreCtrl.text = widget.lugar!.nombre;
       _direccionCtrl.text = widget.lugar!.direccion;
-      _iconoSeleccionado = _emojiDesdeNombre(widget.lugar!.icono);
+      _iconoSeleccionado = widget.lugar!.emoji;
       _viewModel.cargarUbicacion(widget.lugar!.latitud, widget.lugar!.longitud);
     }
   }
@@ -328,26 +328,5 @@ class _PantallaFormularioLugarFrecuenteState
         ),
       ),
     );
-  }
-
-  String _emojiDesdeNombre(String icono) {
-    switch (icono) {
-      case 'home':
-        return '🏠';
-      case 'factory':
-        return '🏭';
-      case 'location_on':
-        return '📍';
-      case 'work':
-        return '💼';
-      case 'school':
-        return '🎓';
-      case 'local_gym':
-        return '🏋';
-      case 'shopping_cart':
-        return '🛒';
-      default:
-        return icono;
-    }
   }
 }

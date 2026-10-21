@@ -133,7 +133,7 @@ class _PantallaListaLugaresFrecuentesState
                   ),
                   child: ListTile(
                     leading: Text(
-                      _emojiDesdeNombre(lugar.icono),
+                      lugar.emoji,
                       style: const TextStyle(fontSize: 28),
                     ),
                     title: Text(
@@ -205,27 +205,6 @@ class _PantallaListaLugaresFrecuentesState
     if (!mounted) return;
     if (actualizado == true) {
       await viewModel.cargarLugares();
-    }
-  }
-
-  String _emojiDesdeNombre(String icono) {
-    switch (icono) {
-      case 'home':
-        return '🏠';
-      case 'factory':
-        return '🏭';
-      case 'location_on':
-        return '📍';
-      case 'work':
-        return '💼';
-      case 'school':
-        return '🎓';
-      case 'local_gym':
-        return '🏋';
-      case 'shopping_cart':
-        return '🛒';
-      default:
-        return icono;
     }
   }
 }
