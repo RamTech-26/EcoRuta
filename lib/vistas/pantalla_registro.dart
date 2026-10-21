@@ -29,6 +29,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
   bool _ocultarContrasena = true;
   bool _ocultarRepetirContrasena = true;
   bool _inicializado = false;
+  bool _navegando = false;
 
   @override
   void initState() {
@@ -42,8 +43,22 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
       viewModel = RegistroViewModel(
         repositorio: context.read<AuthRepositorio>(),
       );
+      viewModel.addListener(_alCambiarEstado);
       _inicializado = true;
     }
+  }
+
+  /// Vuelve al login una sola vez cuando el registro sale bien.
+  ///
+  /// No va en el `build`: el `build` se ejecuta muchas veces (por ejemplo,
+  /// mientras se cierra el teclado) y podía hacer varios `pop` seguidos.
+  void _alCambiarEstado() {
+    if (!viewModel.registrado || _navegando || !mounted) return;
+    _navegando = true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Usuario registrado correctamente')),
+    );
+    Navigator.pop(context);
   }
 
   @override
@@ -57,7 +72,10 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
     controladorPais.dispose();
     controladorCiudad.dispose();
     controladorDepartamento.dispose();
-    if (_inicializado) viewModel.dispose();
+    if (_inicializado) {
+      viewModel.removeListener(_alCambiarEstado);
+      viewModel.dispose();
+    }
     super.dispose();
   }
 
@@ -116,16 +134,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
     return ListenableBuilder(
       listenable: viewModel,
       builder: (context, _) {
-        if (viewModel.registrado) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Usuario registrado correctamente')),
-            );
-            Navigator.pop(context);
-          });
-        }
-
         // El fondo va afuera del Scaffold: así, cuando aparece el teclado,
         // se achica solo el formulario (y Flutter sube el campo que se está
         // escribiendo), pero la imagen no salta.
