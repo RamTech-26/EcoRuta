@@ -88,7 +88,7 @@ class _PantallaListaLugaresFrecuentesState
           );
           if (!mounted) return;
           if (ok == true) {
-            viewModel.cargarLugares();
+            await viewModel.cargarLugares();
           }
         },
         backgroundColor: const Color(0xFF0F766E),
@@ -204,7 +204,7 @@ class _PantallaListaLugaresFrecuentesState
     );
     if (!mounted) return;
     if (actualizado == true) {
-      viewModel.cargarLugares();
+      await viewModel.cargarLugares();
     }
   }
 

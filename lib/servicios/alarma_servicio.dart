@@ -28,7 +28,7 @@ class AlarmaServicio {
   Future<void> programarAlarmaNativa(Alarma alarma) async {
     final estadoAlarma = await Permission.scheduleExactAlarm.request();
     if (estadoAlarma.isDenied || estadoAlarma.isPermanentlyDenied) {
-      openAppSettings();
+      await openAppSettings();
       return;
     }
 

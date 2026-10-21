@@ -445,7 +445,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                 );
                                 // Al volver, refrescamos los chips por si
                                 // se agregó, editó o borró algún lugar.
-                                viewModel.cargarLugares();
+                                await viewModel.cargarLugares();
                               }),
                               _baldosa(Icons.alarm, 'Alarmas', () {
                                 Navigator.push(
