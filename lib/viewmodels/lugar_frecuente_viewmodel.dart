@@ -127,8 +127,11 @@ class LugarFrecuenteViewModel extends ChangeNotifier {
     }
   }
 
+  /// Mueve el elemento de [oldIndex] a [newIndex].
+  ///
+  /// [newIndex] ya viene corregido por `onReorderItem` de
+  /// ReorderableListView: no hay que restarle 1 al mover hacia abajo.
   Future<void> reordenar(int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) newIndex--;
     final item = _lugares.removeAt(oldIndex);
     _lugares.insert(newIndex, item);
     notifyListeners();
