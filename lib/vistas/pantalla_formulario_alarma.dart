@@ -5,6 +5,7 @@ import '../modelos/alarma.dart';
 import '../modelos/lugar_frecuente.dart';
 import '../servicios/lugar_frecuente_servicio.dart';
 import '../viewmodels/alarma_viewmodel.dart';
+import 'dialogo_permiso_alarma.dart';
 
 class PantallaFormularioAlarma extends StatefulWidget {
   final AlarmaViewModel viewModel;
@@ -88,7 +89,11 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
     }
   }
 
-  void _guardar() {
+  /// Valida, se asegura del permiso si la alarma queda activa y la guarda.
+  ///
+  /// Si el usuario no da el permiso, la alarma se guarda desactivada:
+  /// así no queda prendida una alarma que nunca va a sonar.
+  Future<void> _guardar() async {
     if (_lugarIdSeleccionado == null ||
         _horaSeleccionada == null ||
         _diasSeleccionados.isEmpty) {
@@ -101,7 +106,7 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
     final horaStr = _horaSeleccionada!.hour.toString().padLeft(2, '0');
     final minutoStr = _horaSeleccionada!.minute.toString().padLeft(2, '0');
 
-    final alarmaActualizada = Alarma(
+    var alarma = Alarma(
       id:
           widget.alarmaEditar?.id ??
           DateTime.now().millisecondsSinceEpoch.toString(),
@@ -117,7 +122,27 @@ class _PantallaFormularioAlarmaState extends State<PantallaFormularioAlarma> {
       volumen: _volumen,
     );
 
-    widget.viewModel.guardarAlarma(alarmaActualizada);
+    if (alarma.activa) {
+      final puedeSonar = await asegurarPermisoAlarma(context, widget.viewModel);
+      if (!mounted) return;
+      if (!puedeSonar) {
+        alarma = alarma.copyWith(activa: false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'La alarma se guardó desactivada: sin permiso no puede sonar.',
+            ),
+            action: SnackBarAction(
+              label: 'Ajustes',
+              onPressed: widget.viewModel.abrirAjustes,
+            ),
+          ),
+        );
+      }
+    }
+
+    await widget.viewModel.guardarAlarma(alarma);
+    if (!mounted) return;
     Navigator.pop(context);
   }
 

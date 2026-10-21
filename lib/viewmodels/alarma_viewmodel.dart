@@ -56,6 +56,17 @@ class AlarmaViewModel extends ChangeNotifier {
     });
   }
 
+  /// Si las alarmas pueden sonar, sin pedirle nada al usuario.
+  Future<EstadoPermisoAlarma> revisarPermisos() =>
+      _alarmaServicio.revisarPermisos();
+
+  /// Pide los permisos que falten (la vista ya explicó para qué).
+  Future<EstadoPermisoAlarma> pedirPermisos() =>
+      _alarmaServicio.pedirPermisos();
+
+  /// Abre los ajustes de la app.
+  Future<bool> abrirAjustes() => _alarmaServicio.abrirAjustes();
+
   Future<void> guardarAlarma(Alarma alarma) async {
     await _alarmaRepositorio.guardar(alarma);
     if (alarma.activa) {
