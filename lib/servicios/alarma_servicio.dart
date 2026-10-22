@@ -30,9 +30,7 @@ class AlarmaServicio {
   /// Deja un oyente fijo del stream. Se llama una sola vez, desde main.dart.
   static void initListener() {
     _ringSub?.cancel();
-    _ringSub = onRing.listen((settings) {
-      // TODO(grupo): abrir una pantalla de "alarma sonando".
-    });
+    _ringSub = onRing.listen((settings) {});
   }
 
   /// Convierte el id de texto de la alarma en el `int` que pide el plugin.

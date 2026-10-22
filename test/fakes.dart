@@ -1,8 +1,9 @@
+import 'package:ecoruta_2026/modelos/error_auth.dart';
 import 'package:ecoruta_2026/modelos/usuario.dart';
 import 'package:ecoruta_2026/repositorios/auth_repositorio.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ecoruta_2026/servicios/auth_servicio.dart';
 import 'package:ecoruta_2026/servicios/usuario_servicio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// Fake de AuthRepositorio para usar en los tests.
 /// Simula respuestas exitosas o fallidas sin conectarse a Firebase.
@@ -14,16 +15,15 @@ class FakeAuthRepositorio implements AuthRepositorio {
   @override
   Future<void> iniciarSesion(String email, String password) async {
     if (debeFallarLogin) {
-      throw mensajeError;
+      throw const ErrorAuth(TipoErrorAuth.credencialesInvalidas);
     }
-    // Simulamos un pequeño retraso de red (100 ms) para capturar el estado de carga
     await Future.delayed(const Duration(milliseconds: 100));
   }
 
   @override
   Future<void> iniciarConGoogle() async {
     if (debeFallarGoogle) {
-      throw mensajeError;
+      throw const ErrorAuth(TipoErrorAuth.canceladoPorUsuario);
     }
     await Future.delayed(const Duration(milliseconds: 100));
   }

@@ -1,10 +1,10 @@
+import 'package:ecoruta_2026/repositorios/auth_repositorio.dart';
+import 'package:ecoruta_2026/viewmodels/login_viewmodel.dart';
+import 'package:ecoruta_2026/vistas/pantalla_login.dart';
+import 'package:ecoruta_2026/vistas/pantalla_principal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:ecoruta_2026/repositorios/auth_repositorio.dart';
-import 'package:ecoruta_2026/vistas/pantalla_login.dart';
-import 'package:ecoruta_2026/vistas/pantalla_principal.dart';
-import 'package:ecoruta_2026/viewmodels/login_viewmodel.dart';
 
 import '../fakes.dart';
 

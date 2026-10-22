@@ -1,13 +1,12 @@
+import 'package:ecoruta_2026/repositorios/auth_repositorio.dart';
+import 'package:ecoruta_2026/vistas/pantalla_login.dart';
+import 'package:ecoruta_2026/vistas/pantalla_principal.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:provider/provider.dart';
-
-import 'package:ecoruta_2026/repositorios/auth_repositorio.dart';
-import 'package:ecoruta_2026/vistas/pantalla_login.dart';
-import 'package:ecoruta_2026/vistas/pantalla_principal.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 // Importamos los fakes que creaste en la carpeta test
 import '../test/fakes.dart';
@@ -131,7 +130,7 @@ void main() {
         find.widgetWithText(TextField, 'Email'),
         'matias@test.com',
       );
-            await tester.enterText(
+      await tester.enterText(
         find.widgetWithText(TextField, 'Contraseña'),
         '123456',
       );
@@ -167,8 +166,9 @@ void main() {
       await tester.tap(find.text('INICIAR SESIÓN'));
       await tester.pumpAndSettle();
 
-      // Asumimos que el Fake está configurado para fallar si no es "matias@test.com"
+      // Verificamos que sigue en el login y que muestra el error
       expect(find.byType(PantallaLogin), findsOneWidget);
+      expect(find.text('Email o contraseña incorrectos'), findsOneWidget);
 
       // ==========================================
       // PASO 6: LOGIN FALLIDO (MAL CONTRASEÑA)
@@ -188,7 +188,7 @@ void main() {
       await tester.tap(find.text('INICIAR SESIÓN'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Contraseña incorrecta'), findsOneWidget);
+      expect(find.text('Email o contraseña incorrectos'), findsOneWidget);
 
       // ==========================================
       // PASO 7: LOGIN CON GOOGLE

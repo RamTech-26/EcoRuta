@@ -53,7 +53,7 @@ class AlarmaViewModel extends ChangeNotifier {
           await _alarmaServicio.programarAlarmaNativa(alarma);
         }
       }
-      // TODO(grupo): cuando se detenga, reprogramar la que sonó para su
+
       // próximo día; hoy los días de repetición no se reprograman solos.
       _alarmas = alarmasGuardadas;
       notifyListeners();
