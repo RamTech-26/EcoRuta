@@ -1,14 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'dart:async';
-
+import '../modelos/lugar_frecuente.dart';
 import '../repositorios/alarma_repositorio.dart';
 import '../servicios/alarma_servicio.dart';
 import '../servicios/database_helper.dart';
 import '../servicios/lugar_frecuente_servicio.dart';
 import '../viewmodels/lugar_frecuente_viewmodel.dart';
-import '../modelos/lugar_frecuente.dart';
 import 'pantalla_formulario_lugar_frecuente.dart';
 
 class PantallaListaLugaresFrecuentes extends StatefulWidget {
@@ -88,7 +88,7 @@ class _PantallaListaLugaresFrecuentesState
           );
           if (!mounted) return;
           if (ok == true) {
-            viewModel.cargarLugares();
+            await viewModel.cargarLugares();
           }
         },
         backgroundColor: const Color(0xFF0F766E),
@@ -133,7 +133,7 @@ class _PantallaListaLugaresFrecuentesState
                   ),
                   child: ListTile(
                     leading: Text(
-                      _emojiDesdeNombre(lugar.icono),
+                      lugar.emoji,
                       style: const TextStyle(fontSize: 28),
                     ),
                     title: Text(
@@ -204,28 +204,7 @@ class _PantallaListaLugaresFrecuentesState
     );
     if (!mounted) return;
     if (actualizado == true) {
-      viewModel.cargarLugares();
-    }
-  }
-
-  String _emojiDesdeNombre(String icono) {
-    switch (icono) {
-      case 'home':
-        return '🏠';
-      case 'factory':
-        return '🏭';
-      case 'location_on':
-        return '📍';
-      case 'work':
-        return '💼';
-      case 'school':
-        return '🎓';
-      case 'local_gym':
-        return '🏋';
-      case 'shopping_cart':
-        return '🛒';
-      default:
-        return icono;
+      await viewModel.cargarLugares();
     }
   }
 }

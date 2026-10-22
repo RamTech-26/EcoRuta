@@ -24,7 +24,7 @@ Los cuatro integrantes participan de la programación general del proyecto. Cada
 3. Visualización de mapa con capa de tránsito en tiempo real (Google Maps SDK)
 4. Cálculo y visualización de una ruta sugerida (Google Routes API)
 5. Reporte de incidentes viales: tipo, foto y ubicación, guardado local
-6. Alarma configurable para lugares habituales, ejecutada en segundo plano (workmanager)
+6. Alarma configurable para lugares habituales, que suena aunque la app esté cerrada
 7. Sistema de puntos por uso en hora pico, calculado y almacenado localmente
 8. Persistencia local de todos los datos generados por el usuario
 9. Cobertura de testing sobre las funciones críticas del sistema
@@ -43,12 +43,14 @@ Los cuatro integrantes participan de la programación general del proyecto. Cada
 
 ## Stack tecnológico
 
-- **Framework:** Flutter / Dart
-- **Arquitectura:** MVVM
-- **Autenticación:** Firebase Authentication (email/contraseña + Google OAuth)
+- **Framework:** Flutter / Dart (Dart 3.12 o posterior)
+- **Arquitectura:** MVVM en capas (vista, ViewModel, repositorio, servicio)
+- **Inyección de dependencias:** `provider`
+- **Autenticación:** Firebase Authentication (email/contraseña + Google OAuth con `google_sign_in`)
 - **Mapas y rutas:** Google Maps SDK, Google Routes API
-- **Persistencia local:** sqflite, shared_preferences
-- **Tareas en segundo plano:** workmanager
+- **Persistencia local:** `sqflite`, `shared_preferences`
+- **Alarmas:** paquete `alarm` (alarmas del sistema que suenan con la app cerrada) y `permission_handler` para los permisos
+- **Ubicación y fotos:** `geolocator`, `image_picker`, `path_provider`
 - **CI:** GitHub Actions
 - **Testing:** flutter_test (unit, widget e integration tests)
 
@@ -56,34 +58,94 @@ Todos los recursos utilizados se mantienen dentro de sus capas gratuitas.
 
 ## Arquitectura
 
-El proyecto sigue el patrón MVVM:
+El proyecto sigue MVVM organizado en capas. Los pedidos bajan y los datos suben, sin saltear capas:
 
-- **View:** `vistas/` - pantallas y widgets de Flutter, sin lógica de negocio
-- **ViewModel:** `viewmodels/` - maneja el estado y la lógica de presentación de cada pantalla
-- **Model:** `modelos/` - clases de datos (Usuario, Incidente, Alarma, LugarFrecuente, PuntoRuta)
-- **Repositorio:** `repositorios/` - acceso a datos locales (sqflite)
-- **Servicio:** `servicios/` - conexión con Firebase Auth, Google Maps/Routes API y shared_preferences
+- **Vista:** `vistas/` - pantallas y widgets. Dibuja el estado y avisa los toques del usuario. No llama a servicios ni a la base.
+- **ViewModel:** `viewmodels/` - estado y lógica de presentación de cada pantalla. No usa `BuildContext`, `Navigator` ni `ScaffoldMessenger`: expone estado y la vista reacciona.
+- **Repositorio:** `repositorios/` - fuente de verdad de cada tipo de dato. Convierte los datos crudos en modelos y traduce los errores (por ejemplo, los de Firebase a `ErrorAuth`).
+- **Servicio:** `servicios/` - habla con el exterior: Firebase Auth, SQLite, GPS, alarmas del sistema. No guarda estado ni le muestra nada al usuario.
+- **Modelo:** `modelos/` - clases de datos de Dart.
+
+Cada pieza recibe sus dependencias por el constructor (inyección de dependencias), para poder cambiarlas por falsos en los tests.
+
+Estado actual: tienen repositorio la autenticación, las alarmas y la ubicación. Lugares frecuentes, incidentes y usuarios todavía acceden a la base a través de su servicio (pendiente).
 
 ## Modelo de datos
 
-Entidades principales almacenadas localmente:
+La base local es `ecoruta.db` (sqflite), hoy en la **versión 7**. Entidades guardadas:
 
-- **Usuario:** caché mínima de datos de Firebase Auth (uid, email, nombre, método de autenticación)
-- **Incidente:** id, uid del usuario, tipo, foto, ubicación, fecha
-- **Alarma:** id, uid del usuario, nombre del lugar, ubicación, horario, estado
-- **LugarFrecuente:** id, uid del usuario, nombre del lugar, ubicación
-- **PuntoRuta:** id, uid del usuario, ubicación, orden, rutaId
+- **Usuario:** uid de Firebase, nombre y apellido, usuario, DNI, email, país, ciudad, departamento. **La contraseña no se guarda**: la verifica Firebase.
+- **LugarFrecuente:** id, nombre, dirección, latitud y longitud, ícono (emoji), orden.
+- **Alarma:** id, lugar asociado, hora, días, activa, orden y opciones de sonido (repetición, vibración, sonido, volumen).
+- **Incidente:** id, tipos, descripción, calle, fecha, foto, latitud y longitud (opcionales si no hay GPS).
+
+`PuntoRuta` (origen y destino de la pantalla principal) es un modelo en memoria: no se guarda en la base.
+
+El detalle completo, el modelo objetivo y el historial de versiones de la base están en [`docs/modelo_datos.md`](docs/modelo_datos.md).
 
 ## Estructura de carpetas (`lib/`)
 
 ```
 lib/
-├── vistas/        # Pantallas (lo que el usuario ve)
-├── viewmodels/    # Lógica de cada pantalla
-├── modelos/       # Alarma, Incidente, LugarFrecuente, PuntoRuta, Usuario
-├── servicios/     # Conexión con Firebase, Google Maps/Routes y persistencia local
-└── repositorios/  # Acceso a datos locales (sqflite)
+├── vistas/        # Pantallas y widgets (lo que el usuario ve)
+├── viewmodels/    # Estado y lógica de cada pantalla
+├── repositorios/  # Fuente de verdad de cada dato (auth, alarmas, ubicación)
+├── servicios/     # Firebase Auth, SQLite, GPS y alarmas del sistema
+└── modelos/       # Alarma, ErrorAuth, Incidente, LugarFrecuente, PuntoRuta, Usuario
 ```
+
+## Cómo correr el proyecto
+
+### Requisitos
+
+1. Flutter SDK con **Dart 3.12 o posterior** (`flutter --version`). El código usa parámetros con nombre privados (`required this._repositorio`), que no compilan en versiones anteriores.
+2. `flutter doctor` sin errores críticos.
+3. Un dispositivo de prueba: emulador o celular físico por USB con la depuración USB activada.
+4. El archivo `google-services.json` de Firebase, que se comparte por el Drive del grupo (no está en el repo).
+5. Para el login con Google desde una compu nueva: cargar el SHA-1 de esa compu en la consola de Firebase.
+
+### Pasos
+
+```
+git clone https://github.com/RamTech-26/EcoRuta.git
+cd EcoRuta
+```
+
+1. Copiar `google-services.json` en `android/app/`.
+2. Bajar las dependencias (con las versiones exactas de `pubspec.lock`):
+   ```
+   flutter pub get
+   ```
+3. Ver los dispositivos conectados y correr la app:
+   ```
+   flutter devices
+   flutter run -d <id-del-dispositivo>
+   ```
+
+La primera vez que se abre una versión nueva, la base local se actualiza sola (migraciones en `DatabaseHelper`).
+
+### Tests
+
+```
+flutter test
+```
+
+Todavía no hay tests en el repo: el plan está en `docs/plan_testing.md` (rama `feature/tests`). Ver también "Plan de testing" más abajo.
+
+## Calidad de código
+
+- `analysis_options.yaml` incluye `flutter_lints` y estas reglas extra: `prefer_const_constructors`, `prefer_single_quotes`, `directives_ordering`, `always_declare_return_types`, `unawaited_futures` y `only_throw_errors`.
+- El proyecto pasa `flutter analyze` sin avisos (`No issues found!`) y está formateado con `dart format`.
+
+### Rutina antes de cada commit
+
+1. `dart format lib`
+2. `flutter analyze` → tiene que decir **No issues found!**
+3. Probar en un dispositivo lo que se tocó
+4. `git add` de los archivos **por nombre** (no `git add .`) y revisar con `git status` que no aparezca `google-services.json`
+5. Un commit por cambio, sin mezclar refactor con funcionalidad nueva
+
+Las reglas que no hay que romper (comentarios que no se borran, navegación fuera del `build`, permisos, cambios en la base, etc.) están en [`docs/buenas_practicas.md`](docs/buenas_practicas.md).
 
 ## Convenciones
 
@@ -93,7 +155,7 @@ lib/
 - Términos técnicos sin traducción natural en Flutter se mantienen en inglés: `viewmodel`, `login`, `widget`
 - Widgets que no cambian se marcan como `const`
 - Formato de código unificado con `dart format lib` antes de cada commit
-- Calidad: proyecto configurado con `analysis_options.yaml` que incluye `package:flutter_lints/flutter.yaml` y pasa `flutter analyze` sin errores ni warnings (`No issues found!`)
+- Comentarios `///` en lo público de ViewModels, repositorios y servicios; comentarios `//` para explicar el **por qué**; tareas pendientes como `// TODO(responsable): ...`
 
 **Estructura por pantalla:**
 Cada feature se compone de 4 piezas con el mismo nombre base:
@@ -129,7 +191,7 @@ main
 - Se mergea solo si el código compila y no rompe funcionalidades existentes
 - La rama `feature` se elimina una vez fusionada
 
-**Commits:** formato `tipo: qué se hizo`, en español.
+**Commits:** formato `tipo: qué se hizo`, en español. Tipos: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`.
 
 ```
 feat: agrega login con Google
@@ -179,9 +241,9 @@ Ninguna historia se mergea a `main` sin la aprobación de cobertura de QA.
 | Retraso en una historia por dificultad técnica | Estimar con margen, priorizar HU críticas | Recortar alcance de esa HU al mínimo funcional |
 | Ausencia de un integrante | Todos conocen todo el proyecto | Redistribuir su tarea esa semana |
 | Falta de tiempo para testing | Testing continuo por sprint | Priorizar tests de HU críticas |
-| Incompatibilidad de versiones | Fijar versiones en `pubspec.yaml` desde el inicio | Volver a la última versión estable en Git |
+| Incompatibilidad de versiones | Fijar versiones con `pubspec.lock` versionado | Volver a la última versión estable en Git |
 | Pérdida de código por mal manejo de Git | Seguir estrategia de ramas y PR | Recuperar desde el último commit funcional en `main` |
-| Errores de permisos no manejados | Probar permisos al implementar cada feature | Mensaje explicativo si el usuario los rechaza |
+| Errores de permisos no manejados | Pedir cada permiso en contexto, explicando para qué | Mensaje explicativo y acceso a Ajustes si el usuario los rechaza |
 | Cambio de alcance de último momento | Alcance ya documentado y acordado | Pedidos nuevos se anotan como trabajo futuro |
 | Emulador/dispositivo no disponible | Cada integrante prueba en su propio equipo | Usar el dispositivo de otro integrante como respaldo |
 
@@ -198,16 +260,9 @@ Ninguna historia se mergea a `main` sin la aprobación de cobertura de QA.
 
 **Entrega del MVP:** 23/11/26 — una semana antes de la evaluación EGI (1/12/26).
 
-## Variables de entorno
+## Credenciales y archivos privados
 
-- Las API keys de Google y el archivo `google-services.json` de Firebase **no se suben al repositorio**
-- Se gestionan mediante `.env` (paquete `flutter_dotenv`) o `--dart-define`
-- Ambos archivos están incluidos en `.gitignore`
-- Las credenciales se comparten entre el equipo por un canal privado
-
-## Requisitos para levantar el proyecto
-
-1. Flutter SDK instalado y en el PATH
-2. `flutter doctor` sin errores críticos
-3. Un dispositivo de prueba disponible (emulador o celular físico por USB)
-4. Archivo `.env` y `google-services.json` provistos por el equipo (no incluidos en el repo)
+- El archivo `google-services.json` de Firebase **no se sube al repositorio** (está en `.gitignore`). Nunca usar `git add -f` con ese archivo.
+- Las API keys de Google (cuando se integre el mapa) tampoco se suben: se gestionan con `--dart-define` o un archivo `.env` ignorado por Git.
+- Las credenciales se comparten entre el equipo por el Drive del grupo.
+- `pubspec.lock` **sí** se sube: no tiene datos privados y asegura que todos compilen con las mismas versiones.

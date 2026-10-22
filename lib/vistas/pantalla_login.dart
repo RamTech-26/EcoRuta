@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; // <-- NUEVO
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../repositorios/auth_repositorio.dart';
 import '../viewmodels/login_viewmodel.dart';
 import 'pantalla_principal.dart';
 import 'pantalla_registro.dart';
-import '../repositorios/auth_repositorio.dart';
-
-import 'package:provider/provider.dart';
 
 class PantallaLogin extends StatefulWidget {
   const PantallaLogin({super.key});
@@ -19,6 +18,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
   final TextEditingController controladorUsuario = TextEditingController();
   final TextEditingController controladorContrasena = TextEditingController();
   bool _inicializado = false;
+  bool _navegando = false;
 
   @override
   void initState() {
@@ -30,12 +30,27 @@ class _PantallaLoginState extends State<PantallaLogin> {
     super.didChangeDependencies();
     if (!_inicializado) {
       viewModel = LoginViewModel(repositorio: context.read<AuthRepositorio>());
+      viewModel.addListener(_alCambiarEstado);
       _inicializado = true;
     }
   }
 
+  /// Abre la pantalla principal una sola vez cuando el login sale bien.
+  ///
+  /// No va en el `build`: el `build` se ejecuta muchas veces (por ejemplo,
+  /// mientras se cierra el teclado) y abría varias copias de la pantalla.
+  void _alCambiarEstado() {
+    if (!viewModel.logueado || _navegando || !mounted) return;
+    _navegando = true;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const PantallaPrincipal()),
+    );
+  }
+
   @override
   void dispose() {
+    if (_inicializado) viewModel.removeListener(_alCambiarEstado);
     controladorUsuario.dispose();
     controladorContrasena.dispose();
     viewModel.dispose();
@@ -47,15 +62,6 @@ class _PantallaLoginState extends State<PantallaLogin> {
     return ListenableBuilder(
       listenable: viewModel,
       builder: (context, _) {
-        if (viewModel.logueado) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const PantallaPrincipal()),
-            );
-          });
-        }
         return Scaffold(
           resizeToAvoidBottomInset: false,
           body: Container(
@@ -72,14 +78,21 @@ class _PantallaLoginState extends State<PantallaLogin> {
               child: Stack(
                 children: [
                   SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
+                    // Abajo se suma el alto del teclado: el fondo no se achica
+                    // (resizeToAvoidBottomInset: false), pero así se puede
+                    // bajar hasta el último campo con el teclado abierto.
+                    padding: EdgeInsets.fromLTRB(
+                      24,
+                      24,
+                      24,
+                      24 + MediaQuery.viewInsetsOf(context).bottom,
+                    ),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
-                        minHeight: MediaQuery.of(context).size.height - 48,
+                        minHeight: MediaQuery.sizeOf(context).height - 48,
                       ),
                       child: Column(
-                        mainAxisAlignment:
-                            MainAxisAlignment.center, // <-- CENTRADO VERTICAL
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const SizedBox(height: 50),
                           if (viewModel.error != null)
@@ -170,18 +183,16 @@ class _PantallaLoginState extends State<PantallaLogin> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          Row(
+                          const Row(
                             children: [
-                              const Expanded(
+                              Expanded(
                                 child: Divider(
                                   color: Colors.white54,
                                   thickness: 1,
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
+                                padding: EdgeInsets.symmetric(horizontal: 12),
                                 child: Text(
                                   'o',
                                   style: TextStyle(
@@ -191,7 +202,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
                                   ),
                                 ),
                               ),
-                              const Expanded(
+                              Expanded(
                                 child: Divider(
                                   color: Colors.white54,
                                   thickness: 1,

@@ -39,19 +39,37 @@ class AlarmaViewModel extends ChangeNotifier {
     }
   }
 
+  /// Cuando suena una alarma, vuelve a programar las otras activas.
+  ///
+  /// La que está sonando no se toca: volver a programarla con el mismo id
+  /// la corta antes de que se escuche, porque empieza con volumen bajo.
   void _escucharEventosDeAlarma() {
     _ringSub?.cancel();
-    _ringSub = AlarmaServicio.onRing.listen((alarmSettings) async {
+    // Escuchamos el broadcast del servicio, NO el stream directo del plugin.
+    _ringSub = AlarmaServicio.onRing.listen((sonando) async {
       final alarmasGuardadas = await _alarmaRepositorio.obtenerTodas();
-      for (var a in alarmasGuardadas) {
-        if (a.activa) {
-          await _alarmaServicio.programarAlarmaNativa(a);
+      for (final alarma in alarmasGuardadas) {
+        if (alarma.activa && !_alarmaServicio.esLaMisma(alarma, sonando)) {
+          await _alarmaServicio.programarAlarmaNativa(alarma);
         }
       }
+      // TODO(grupo): cuando se detenga, reprogramar la que sonó para su
+      // próximo día; hoy los días de repetición no se reprograman solos.
       _alarmas = alarmasGuardadas;
       notifyListeners();
     });
   }
+
+  /// Si las alarmas pueden sonar, sin pedirle nada al usuario.
+  Future<EstadoPermisoAlarma> revisarPermisos() =>
+      _alarmaServicio.revisarPermisos();
+
+  /// Pide los permisos que falten (la vista ya explicó para qué).
+  Future<EstadoPermisoAlarma> pedirPermisos() =>
+      _alarmaServicio.pedirPermisos();
+
+  /// Abre los ajustes de la app.
+  Future<bool> abrirAjustes() => _alarmaServicio.abrirAjustes();
 
   Future<void> guardarAlarma(Alarma alarma) async {
     await _alarmaRepositorio.guardar(alarma);
@@ -84,8 +102,11 @@ class AlarmaViewModel extends ChangeNotifier {
     await _alarmaServicio.cancelarAlarmaNativa(id);
   }
 
+  /// Mueve el elemento de [oldIndex] a [newIndex].
+  ///
+  /// [newIndex] ya viene corregido por `onReorderItem` de
+  /// ReorderableListView: no hay que restarle 1 al mover hacia abajo.
   Future<void> reordenar(int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) newIndex--;
     final item = _alarmas.removeAt(oldIndex);
     _alarmas.insert(newIndex, item);
     notifyListeners();

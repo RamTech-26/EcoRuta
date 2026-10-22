@@ -6,8 +6,13 @@ import '../repositorios/ubicacion_repositorio.dart';
 import '../servicios/lugar_frecuente_servicio.dart';
 import '../servicios/ubicacion_servicio.dart';
 
+/// Los dos campos de la ruta.
 enum CampoRuta { origen, destino }
 
+/// ViewModel de la pantalla principal.
+///
+/// Maneja el origen y el destino de la ruta, los lugares frecuentes
+/// para elegir y el panel deslizable inferior.
 class PrincipalViewModel extends ChangeNotifier {
   final TextEditingController controladorOrigen = TextEditingController();
   final TextEditingController controladorDestino = TextEditingController();
@@ -29,8 +34,12 @@ class PrincipalViewModel extends ChangeNotifier {
 
   PuntoRuta? get origen => _origen;
   PuntoRuta? get destino => _destino;
+
+  /// Campo que está esperando el GPS (para mostrar la ruedita).
   CampoRuta? get buscandoUbicacion => _buscandoUbicacion;
 
+  /// Si la ruta se puede pedir: los dos puntos tienen coordenadas.
+  /// Lo va a usar la ruta sugerida (sprint 3).
   bool get rutaLista =>
       (_origen?.tieneCoordenadas ?? false) &&
       (_destino?.tieneCoordenadas ?? false);
@@ -48,12 +57,17 @@ class PrincipalViewModel extends ChangeNotifier {
     }
   }
 
+  /// Pone un punto en el campo. Primero guarda el punto y después el texto,
+  /// así el listener del texto no lo confunde con algo escrito a mano.
   void _asignar(CampoRuta campo, PuntoRuta? nuevo) {
     _guardarPunto(campo, nuevo);
     controlador(campo).text = nuevo?.texto ?? '';
     _notificar();
   }
 
+  /// Pide el GPS y, si sale bien, lo pone en el campo.
+  ///
+  /// Devuelve el estado para que la vista muestre el aviso que corresponda.
   Future<EstadoUbicacion> usarUbicacionActual(CampoRuta campo) async {
     _buscandoUbicacion = campo;
     _notificar();
@@ -74,6 +88,8 @@ class PrincipalViewModel extends ChangeNotifier {
   void elegirLugar(CampoRuta campo, LugarFrecuente lugar) =>
       _asignar(campo, PuntoRuta.desdeLugar(lugar));
 
+  /// Pone en el campo el punto que el usuario tocó en el mapa.
+  /// Lo va a llamar el mapa cuando esté listo.
   void asignarDesdeMapa(
     CampoRuta campo, {
     required double latitud,
@@ -90,6 +106,8 @@ class PrincipalViewModel extends ChangeNotifier {
       _ubicacionRepositorio.abrirAjustesUbicacion();
   Future<bool> abrirAjustesApp() => _ubicacionRepositorio.abrirAjustesApp();
 
+  /// Si el usuario escribe en el campo, el punto pasa a ser "manual"
+  /// (sin coordenadas), o se borra si dejó el campo vacío.
   void _alCambiarTexto(CampoRuta campo) {
     final texto = controlador(campo).text;
     final actual = punto(campo);
@@ -97,6 +115,7 @@ class PrincipalViewModel extends ChangeNotifier {
     final nuevo = texto.trim().isEmpty ? null : PuntoRuta.manual(texto);
     final cambioDeTipo = actual?.tipo != nuevo?.tipo;
     _guardarPunto(campo, nuevo);
+    // Solo avisamos si cambió el tipo, no en cada letra.
     if (cambioDeTipo) _notificar();
   }
 
@@ -114,6 +133,8 @@ class PrincipalViewModel extends ChangeNotifier {
     _notificar();
   }
 
+  /// Si el lugar elegido se editó, toma las coordenadas nuevas sin cambiar
+  /// el texto del campo. Si se borró, queda como texto escrito a mano.
   void _actualizarPuntoDeLugar(CampoRuta campo) {
     final actual = punto(campo);
     if (actual == null || actual.tipo != TipoPunto.lugarFrecuente) return;
@@ -135,6 +156,7 @@ class PrincipalViewModel extends ChangeNotifier {
     );
   }
 
+  /// Abre o cierra el panel deslizable según su posición actual.
   void alternarPanel() {
     final abierto = controladorPanel.size > 0.2;
     controladorPanel.animateTo(
@@ -152,6 +174,8 @@ class PrincipalViewModel extends ChangeNotifier {
     );
   }
 
+  /// Evita avisar a la vista si ya se cerró (por ejemplo, si el GPS
+  /// responde después de salir de la pantalla).
   void _notificar() {
     if (!_cerrado) notifyListeners();
   }

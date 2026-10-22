@@ -6,6 +6,7 @@ import '../repositorios/alarma_repositorio.dart';
 import '../servicios/alarma_servicio.dart';
 import '../servicios/database_helper.dart';
 import '../viewmodels/alarma_viewmodel.dart';
+import 'dialogo_permiso_alarma.dart';
 import 'pantalla_formulario_alarma.dart';
 
 class PantallaAlarmas extends StatefulWidget {
@@ -47,6 +48,28 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
         ),
       ),
     );
+  }
+
+  /// Prende o apaga una alarma. Para prenderla, primero se asegura del
+  /// permiso; si no lo dan, el switch queda apagado.
+  Future<void> _alternar(Alarma alarma, bool activar) async {
+    if (activar) {
+      final puedeSonar = await asegurarPermisoAlarma(context, viewModel);
+      if (!mounted) return;
+      if (!puedeSonar) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Sin permiso, la alarma no puede sonar.'),
+            action: SnackBarAction(
+              label: 'Ajustes',
+              onPressed: viewModel.abrirAjustes,
+            ),
+          ),
+        );
+        return;
+      }
+    }
+    await viewModel.alternarActivacion(alarma, activar);
   }
 
   @override
@@ -131,9 +154,7 @@ class _PantallaAlarmasState extends State<PantallaAlarmas> {
                       trailing: Switch(
                         value: alarma.activa,
                         activeThumbColor: const Color(0xFF0F766E),
-                        onChanged: (valor) {
-                          viewModel.alternarActivacion(alarma, valor);
-                        },
+                        onChanged: (valor) => _alternar(alarma, valor),
                       ),
                     ),
                   ),

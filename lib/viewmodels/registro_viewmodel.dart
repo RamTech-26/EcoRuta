@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../modelos/error_auth.dart';
 import '../modelos/usuario.dart';
 import '../repositorios/auth_repositorio.dart';
 
@@ -158,7 +159,6 @@ class RegistroViewModel extends ChangeNotifier {
         usuario: usuario.trim(),
         dni: dni.trim(),
         email: email.trim(),
-        contrasena: contrasena,
         pais: pais.trim(),
         ciudad: ciudad.trim(),
         departamento: departamento.trim(),
@@ -166,13 +166,18 @@ class RegistroViewModel extends ChangeNotifier {
 
       await _repositorio.registrar(nuevoUsuario, contrasena);
       _registrado = true;
-    } catch (e) {
-      final msg = e.toString();
-      if (msg.contains('ya está registrado')) {
-        _errorEmail = msg;
-      } else {
-        _errorGeneral = msg;
+    } on ErrorAuth catch (e) {
+      // Cada error va debajo del campo que lo causó.
+      switch (e.tipo) {
+        case TipoErrorAuth.emailEnUso || TipoErrorAuth.emailInvalido:
+          _errorEmail = e.mensaje;
+        case TipoErrorAuth.contrasenaDebil:
+          _errorContrasena = e.mensaje;
+        default:
+          _errorGeneral = e.mensaje;
       }
+    } catch (_) {
+      _errorGeneral = TipoErrorAuth.desconocido.mensaje;
     } finally {
       _cargando = false;
       notifyListeners();

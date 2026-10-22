@@ -72,7 +72,7 @@ class LugarFrecuente {
       case 'school':
         return '🎓';
       case 'local_gym':
-        return '🏋️';
+        return '\u{1F3CB}\u{FE0F}'; // 🏋️ (con el selector de variación)
       case 'shopping_cart':
         return '🛒';
       default:
